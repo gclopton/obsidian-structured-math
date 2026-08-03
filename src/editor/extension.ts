@@ -1,8 +1,8 @@
 import { Prec, type Extension } from "@codemirror/state";
 import { EditorView, keymap, ViewPlugin, type KeyBinding, type ViewUpdate } from "@codemirror/view";
 import type { StructuredMathSettings } from "../settings";
-import { activateMath, activeMathField } from "./active-state";
-import { findMathRangeAt, findMathRangeByBoundary, scanMathRanges, type MathSourceRange } from "./math-ranges";
+import { activateMath, activeMathField, type ActiveMathState } from "./active-state";
+import { findMathRangeAt, findMathRangeByBoundary, mathSource, scanMathRanges, type MathSourceRange } from "./math-ranges";
 
 function focusMountedField(view: EditorView, side: "start" | "end"): void {
   window.setTimeout(() => {
@@ -25,6 +25,10 @@ function activateRange(view: EditorView, range: MathSourceRange, side: "start" |
 
 function currentActive(view: EditorView): boolean {
   return view.state.field(activeMathField, false) !== null;
+}
+
+function activeState(view: EditorView): ActiveMathState | null {
+  return view.state.field(activeMathField, false);
 }
 
 function createInlineMath(view: EditorView, from = view.state.selection.main.from, to = view.state.selection.main.to): boolean {
@@ -53,6 +57,28 @@ function createInlineMath(view: EditorView, from = view.state.selection.main.fro
   return true;
 }
 
+function convertEmptyInlineToDisplay(view: EditorView, active: ActiveMathState): boolean {
+  if (!active.inline || active.latex !== "" || active.dirty) return false;
+  const source = mathSource({ inline: false }, "");
+  const contentFrom = active.sourceFrom + 3;
+  view.dispatch({
+    changes: { from: active.sourceFrom, to: active.sourceTo, insert: source },
+    effects: activateMath.of({
+      sourceFrom: active.sourceFrom,
+      sourceTo: active.sourceFrom + source.length,
+      contentFrom,
+      contentTo: contentFrom,
+      inline: false,
+      latex: "",
+      focusSide: "start",
+    }),
+    scrollIntoView: true,
+    userEvent: "input",
+  });
+  focusMountedField(view, "start");
+  return true;
+}
+
 function arrowEntryBinding(key: string, side: "start" | "end"): KeyBinding {
   return {
     key,
@@ -70,7 +96,9 @@ function dollarBinding(settings: StructuredMathSettings): KeyBinding {
   return {
     key: "$",
     run(view) {
-      if (!settings.enableDollarShortcut || currentActive(view)) return false;
+      const active = activeState(view);
+      if (active) return convertEmptyInlineToDisplay(view, active);
+      if (!settings.enableDollarShortcut) return false;
       const position = view.state.selection.main.head;
       const ranges = scanMathRanges(view.state);
       if (findMathRangeAt(view.state.doc, ranges, position)) return false;
@@ -82,7 +110,9 @@ function dollarBinding(settings: StructuredMathSettings): KeyBinding {
 function dollarInputHandler(settings: StructuredMathSettings): Extension {
   return EditorView.inputHandler.of((view, from, to, text) => {
     if (text !== "$") return false;
-    if (!settings.enableDollarShortcut || currentActive(view)) return false;
+    const active = activeState(view);
+    if (active) return convertEmptyInlineToDisplay(view, active);
+    if (!settings.enableDollarShortcut) return false;
     const ranges = scanMathRanges(view.state);
     if (findMathRangeAt(view.state.doc, ranges, from)) return false;
     return createInlineMath(view, from, to);

@@ -19,6 +19,7 @@ interface Phase2Harness {
   setCursor(position: number): void;
   cursor(): number;
   activeExists(): boolean;
+  activeDisplay(): boolean;
   activeFocused(): boolean;
   activeLatex(): string;
   setActiveLatex(latex: string): void;
@@ -90,6 +91,9 @@ window.phase2Harness = {
   },
   activeExists(): boolean {
     return requireView().dom.querySelector(".structured-math-active-widget math-field") !== null;
+  },
+  activeDisplay(): boolean {
+    return requireView().dom.querySelector(".structured-math-active-widget")?.getAttribute("data-display") === "true";
   },
   activeFocused(): boolean {
     const field = requireView().dom.querySelector(".structured-math-active-widget math-field");

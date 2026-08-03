@@ -1,7 +1,7 @@
 import { EditorSelection } from "@codemirror/state";
 import { WidgetType, type EditorView } from "@codemirror/view";
 import { MathLiveEngine } from "../engine/mathlive/mathlive-engine";
-import { deactivateMath, markMathDirty, type ActiveMathState } from "./active-state";
+import { activateMath, deactivateMath, markMathDirty, type ActiveMathState } from "./active-state";
 import { mathSource } from "./math-ranges";
 
 interface MathfieldDom extends HTMLElement {
@@ -141,6 +141,32 @@ export class StructuredMathWidget extends WidgetType {
     cleanup.push(engine.onCancel(revertAndDeactivate));
 
     wrapper.addEventListener("keydown", (event) => {
+      if (event.key === "$" && canConvertEmptyInlineToDisplay(wrapper, engine)) {
+        const sourceFrom = numberFromDataset(wrapper, "sourceFrom");
+        const sourceTo = numberFromDataset(wrapper, "sourceTo");
+        if (Number.isNaN(sourceFrom) || Number.isNaN(sourceTo)) return;
+        const source = mathSource({ inline: false }, "");
+        const contentFrom = sourceFrom + 3;
+        view.dispatch({
+          changes: { from: sourceFrom, to: sourceTo, insert: source },
+          effects: activateMath.of({
+            sourceFrom,
+            sourceTo: sourceFrom + source.length,
+            contentFrom,
+            contentTo: contentFrom,
+            inline: false,
+            latex: "",
+            focusSide: "start",
+          }),
+          selection: EditorSelection.cursor(contentFrom),
+          scrollIntoView: true,
+          userEvent: "input",
+        });
+        event.preventDefault();
+        event.stopPropagation();
+        return;
+      }
+
       if (event.key !== "Escape") return;
       revertAndDeactivate();
       event.preventDefault();
@@ -181,4 +207,11 @@ export class StructuredMathWidget extends WidgetType {
     state.engine.destroy();
     widgetState.delete(dom);
   }
+}
+
+function canConvertEmptyInlineToDisplay(wrapper: HTMLElement, engine: MathLiveEngine): boolean {
+  if (wrapper.dataset.inline !== "true") return false;
+  if (wrapper.dataset.initialLatex !== "") return false;
+  if (wrapper.dataset.dirty === "true") return false;
+  return engine.getLatex() === "";
 }

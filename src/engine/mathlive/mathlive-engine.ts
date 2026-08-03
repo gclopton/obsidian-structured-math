@@ -100,12 +100,11 @@ export class MathLiveEngine implements EditorEngine {
     this.requireField().blur();
   }
 
-  caretInfo(): { atStart: boolean; atEnd: boolean; depth: number } {
+  caretInfo(): { atStart: boolean; atEnd: boolean } {
     const field = this.requireField();
     return {
       atStart: field.position <= 0,
       atEnd: field.position >= field.lastOffset,
-      depth: field.getElementInfo(field.position)?.depth ?? 0,
     };
   }
 
@@ -173,11 +172,7 @@ export class MathLiveEngine implements EditorEngine {
       ? "left"
       : event.key === "ArrowRight" && info.atEnd
         ? "right"
-        : event.key === "ArrowUp" && info.depth === 0
-          ? "up"
-          : event.key === "ArrowDown" && info.depth === 0
-            ? "down"
-            : null;
+        : null;
 
     if (boundaryDirection) {
       event.preventDefault();

@@ -9,6 +9,7 @@ interface Phase2Harness {
   setCursor(position: number): void;
   cursor(): number;
   activeExists(): boolean;
+  activeDisplay(): boolean;
   activeFocused(): boolean;
   activeLatex(): string;
   setActiveLatex(latex: string): void;
@@ -60,6 +61,30 @@ describe("Phase 2 in-document editor path", () => {
     await page.keyboard.type(" on the line");
 
     expect(await page.evaluate(() => window.phase2Harness.doc())).toBe("Speed: $v=\\frac{s}{t}$ on the line");
+  });
+
+  it("converts a second $ in an empty inline field into an active display block", async () => {
+    await page.evaluate(() => window.phase2Harness.mount("Display: "));
+    await page.evaluate(() => window.phase2Harness.setCursor("Display: ".length));
+    await page.keyboard.type("$$");
+    await waitForActive();
+
+    expect(await page.evaluate(() => window.phase2Harness.activeDisplay())).toBe(true);
+    expect(await page.evaluate(() => window.phase2Harness.doc())).toBe("Display: $$\n\n$$");
+  });
+
+  it("leaves vertical arrows inside MathLive for limits and stacked structures", async () => {
+    await page.evaluate(() => window.phase2Harness.mount("A "));
+    await page.evaluate(() => window.phase2Harness.setCursor("A ".length));
+    await page.keyboard.type("$");
+    await waitForActive();
+    await page.evaluate(() => window.phase2Harness.setActiveLatex("\\int_{0}^{1} f(x) dx"));
+
+    await page.keyboard.press("ArrowDown");
+    expect(await page.evaluate(() => window.phase2Harness.activeExists())).toBe(true);
+
+    await page.keyboard.press("ArrowUp");
+    expect(await page.evaluate(() => window.phase2Harness.activeExists())).toBe(true);
   });
 
   it("does not rewrite an equation that is activated and closed without edits", async () => {
