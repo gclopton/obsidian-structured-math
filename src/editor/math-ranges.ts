@@ -50,6 +50,25 @@ export function mathSource(range: Pick<MathSourceRange, "inline">, latex: string
   return range.inline ? `$${latex}$` : `$$\n${latex}\n$$`;
 }
 
+export function displayReplacementForContext(
+  doc: Text,
+  sourceFrom: number,
+  sourceTo: number
+): { source: string; sourceFrom: number; contentFrom: number; sourceTo: number } {
+  const needsLeadingBreak = sourceFrom > 0 && doc.sliceString(sourceFrom - 1, sourceFrom) !== "\n";
+  const needsTrailingBreak = sourceTo < doc.length && doc.sliceString(sourceTo, sourceTo + 1) !== "\n";
+  const prefix = needsLeadingBreak ? "\n" : "";
+  const suffix = needsTrailingBreak ? "\n" : "";
+  const source = `${prefix}${mathSource({ inline: false }, "")}${suffix}`;
+  const displaySourceFrom = sourceFrom + prefix.length;
+  return {
+    source,
+    sourceFrom: displaySourceFrom,
+    contentFrom: displaySourceFrom + 3,
+    sourceTo: displaySourceFrom + mathSource({ inline: false }, "").length,
+  };
+}
+
 export function scanMarkdownMathText(text: string): MathSourceRange[] {
   const ranges: MathSourceRange[] = [];
   let index = 0;

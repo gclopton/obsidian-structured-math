@@ -20,6 +20,7 @@ interface Phase2Harness {
   cursor(): number;
   activeExists(): boolean;
   activeDisplay(): boolean;
+  builtInControlsHidden(): boolean;
   activeFocused(): boolean;
   activeLatex(): string;
   setActiveLatex(latex: string): void;
@@ -94,6 +95,15 @@ window.phase2Harness = {
   },
   activeDisplay(): boolean {
     return requireView().dom.querySelector(".structured-math-active-widget")?.getAttribute("data-display") === "true";
+  },
+  builtInControlsHidden(): boolean {
+    const field = activeField();
+    const root = field.shadowRoot;
+    if (!root) return false;
+    const keyboard = root.querySelector<HTMLElement>("[part='virtual-keyboard-toggle']");
+    const menu = root.querySelector<HTMLElement>("[part='menu-toggle']");
+    return (!keyboard || getComputedStyle(keyboard).display === "none") &&
+      (!menu || getComputedStyle(menu).display === "none");
   },
   activeFocused(): boolean {
     const field = requireView().dom.querySelector(".structured-math-active-widget math-field");

@@ -154,6 +154,15 @@ export class MathLiveEngine implements EditorEngine {
       return;
     }
 
+    if (event.key === "$") {
+      window.setTimeout(() => {
+        if (!this.field || this.suppressChange) return;
+        const latex = this.getLatex();
+        for (const callback of this.changeCallbacks) callback(latex);
+      }, 0);
+      return;
+    }
+
     if (event.key === "Tab") {
       event.preventDefault();
       const before = this.field.position;

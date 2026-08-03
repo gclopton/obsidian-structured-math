@@ -2,7 +2,7 @@ import { Prec, type Extension } from "@codemirror/state";
 import { EditorView, keymap, ViewPlugin, type KeyBinding, type ViewUpdate } from "@codemirror/view";
 import type { StructuredMathSettings } from "../settings";
 import { activateMath, activeMathField, type ActiveMathState } from "./active-state";
-import { findMathRangeAt, findMathRangeByBoundary, mathSource, scanMathRanges, type MathSourceRange } from "./math-ranges";
+import { displayReplacementForContext, findMathRangeAt, findMathRangeByBoundary, scanMathRanges, type MathSourceRange } from "./math-ranges";
 
 function focusMountedField(view: EditorView, side: "start" | "end"): void {
   window.setTimeout(() => {
@@ -59,23 +59,28 @@ function createInlineMath(view: EditorView, from = view.state.selection.main.fro
 
 function convertEmptyInlineToDisplay(view: EditorView, active: ActiveMathState): boolean {
   if (!active.inline || active.latex !== "" || active.dirty) return false;
-  const source = mathSource({ inline: false }, "");
-  const contentFrom = active.sourceFrom + 3;
+  const replacement = displayReplacementForContext(view.state.doc, active.sourceFrom, active.sourceTo);
   view.dispatch({
-    changes: { from: active.sourceFrom, to: active.sourceTo, insert: source },
-    effects: activateMath.of({
-      sourceFrom: active.sourceFrom,
-      sourceTo: active.sourceFrom + source.length,
-      contentFrom,
-      contentTo: contentFrom,
-      inline: false,
-      latex: "",
-      focusSide: "start",
-    }),
+    changes: { from: active.sourceFrom, to: active.sourceTo, insert: replacement.source },
     scrollIntoView: true,
     userEvent: "input",
   });
-  focusMountedField(view, "start");
+  window.setTimeout(() => {
+    view.dispatch({
+      effects: activateMath.of({
+        sourceFrom: replacement.sourceFrom,
+        sourceTo: replacement.sourceTo,
+        contentFrom: replacement.contentFrom,
+        contentTo: replacement.contentFrom,
+        inline: false,
+        latex: "",
+        focusSide: "start",
+      }),
+      selection: { anchor: replacement.contentFrom },
+      scrollIntoView: true,
+    });
+    focusMountedField(view, "start");
+  }, 0);
   return true;
 }
 

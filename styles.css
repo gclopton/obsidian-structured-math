@@ -26,6 +26,11 @@
   font-size: var(--font-text-size, 16px);
 }
 
+.structured-math-active-widget math-field::part(virtual-keyboard-toggle),
+.structured-math-active-widget math-field::part(menu-toggle) {
+  display: none;
+}
+
 .structured-math-active-widget[data-display="true"] math-field {
   display: block;
   width: 100%;

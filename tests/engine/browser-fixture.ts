@@ -28,7 +28,14 @@ export async function buildBrowserFixture(entryPoint: string, outDir: string): P
     try {
       if (requestUrl.pathname === "/") {
         res.writeHead(200, { "content-type": "text/html" });
-        res.end("<!doctype html><html><body><div id=\"app\"></div><script type=\"module\" src=\"/entry.js\"></script></body></html>");
+        res.end("<!doctype html><html><head><link rel=\"stylesheet\" href=\"/styles.css\"></head><body><div id=\"app\"></div><script type=\"module\" src=\"/entry.js\"></script></body></html>");
+        return;
+      }
+
+      if (requestUrl.pathname === "/styles.css") {
+        const file = await readFile(path.resolve("styles.css"));
+        res.writeHead(200, { "content-type": "text/css" });
+        res.end(file);
         return;
       }
 

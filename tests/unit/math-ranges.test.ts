@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { mathSource, scanMarkdownMathText } from "../../src/editor/math-ranges";
+import { Text } from "@codemirror/state";
+import { displayReplacementForContext, mathSource, scanMarkdownMathText } from "../../src/editor/math-ranges";
 
 describe("markdown math range scanner", () => {
   it("finds inline ranges and keeps delimiter positions separate from content", () => {
@@ -30,5 +31,14 @@ describe("markdown math range scanner", () => {
 
   it("serializes committed display source in the clean multiline form", () => {
     expect(mathSource({ inline: false }, "E=mc^2")).toBe("$$\nE=mc^2\n$$");
+  });
+
+  it("starts display replacements on a new line after prose", () => {
+    const text = Text.of(["Display: $$"]);
+    const replacement = displayReplacementForContext(text, "Display: ".length, "Display: $$".length);
+
+    expect(replacement.source).toBe("\n$$\n\n$$");
+    expect(replacement.sourceFrom).toBe("Display: \n".length);
+    expect(replacement.contentFrom).toBe("Display: \n$$\n".length);
   });
 });

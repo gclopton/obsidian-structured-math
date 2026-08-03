@@ -10,6 +10,7 @@ interface Phase2Harness {
   cursor(): number;
   activeExists(): boolean;
   activeDisplay(): boolean;
+  builtInControlsHidden(): boolean;
   activeFocused(): boolean;
   activeLatex(): string;
   setActiveLatex(latex: string): void;
@@ -46,8 +47,8 @@ describe("Phase 2 in-document editor path", () => {
   });
 
   async function waitForActive(): Promise<void> {
-    await page.waitForFunction(() => window.phase2Harness.activeExists());
-    await page.waitForFunction(() => window.phase2Harness.activeFocused());
+    await page.waitForFunction(() => window.phase2Harness.activeExists(), undefined, { timeout: 5000 });
+    await page.waitForFunction(() => window.phase2Harness.activeFocused(), undefined, { timeout: 5000 });
   }
 
   it("creates inline math from $ and continues prose after a boundary exit", async () => {
@@ -70,7 +71,30 @@ describe("Phase 2 in-document editor path", () => {
     await waitForActive();
 
     expect(await page.evaluate(() => window.phase2Harness.activeDisplay())).toBe(true);
-    expect(await page.evaluate(() => window.phase2Harness.doc())).toBe("Display: $$\n\n$$");
+    expect(await page.evaluate(() => window.phase2Harness.doc())).toBe("Display: \n$$\n\n$$");
+  });
+
+  it("converts a second $ typed after the empty inline field has focus into display mode", async () => {
+    await page.evaluate(() => window.phase2Harness.mount("Display: "));
+    await page.evaluate(() => window.phase2Harness.setCursor("Display: ".length));
+    await page.keyboard.type("$");
+    await waitForActive();
+
+    await page.keyboard.type("$");
+    await page.waitForFunction(() => window.phase2Harness.activeDisplay(), undefined, { timeout: 5000 });
+    await waitForActive();
+
+    expect(await page.evaluate(() => window.phase2Harness.activeDisplay())).toBe(true);
+    expect(await page.evaluate(() => window.phase2Harness.doc())).toBe("Display: \n$$\n\n$$");
+  });
+
+  it("hides MathLive's built-in keyboard and menu toggles in the active widget", async () => {
+    await page.evaluate(() => window.phase2Harness.mount("A "));
+    await page.evaluate(() => window.phase2Harness.setCursor("A ".length));
+    await page.keyboard.type("$");
+    await waitForActive();
+
+    expect(await page.evaluate(() => window.phase2Harness.builtInControlsHidden())).toBe(true);
   });
 
   it("leaves vertical arrows inside MathLive for limits and stacked structures", async () => {
@@ -85,6 +109,19 @@ describe("Phase 2 in-document editor path", () => {
 
     await page.keyboard.press("ArrowUp");
     expect(await page.evaluate(() => window.phase2Harness.activeExists())).toBe(true);
+  });
+
+  it("keeps focus in the active field when clicking inside a matrix", async () => {
+    await page.evaluate(() => window.phase2Harness.mount("Matrix: "));
+    await page.evaluate(() => window.phase2Harness.setCursor("Matrix: ".length));
+    await page.keyboard.type("$");
+    await waitForActive();
+    await page.evaluate(() => window.phase2Harness.setActiveLatex("\\begin{pmatrix}1&2\\\\3&4\\end{pmatrix}"));
+
+    await page.locator(".structured-math-active-widget math-field").click();
+
+    expect(await page.evaluate(() => window.phase2Harness.activeExists())).toBe(true);
+    expect(await page.evaluate(() => window.phase2Harness.activeFocused())).toBe(true);
   });
 
   it("does not rewrite an equation that is activated and closed without edits", async () => {
