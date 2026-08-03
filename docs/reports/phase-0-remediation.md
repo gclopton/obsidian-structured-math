@@ -8,10 +8,10 @@ Remediation performed:
 
 - `spikes/mathlive-fidelity/run-roundtrip.mjs` now records cached `getValue("latex")` separately and classifies `getValue("latex-expanded")`.
 - `spikes/mathlive-fidelity/run-natural-checks.mjs` now records post-edit `getValue("latex-expanded")`.
-- `spikes/mathlive-fidelity/analyze-d28.mjs` computes a provisional D28 normalization analysis.
-- `docs/decisions/D28-post-edit-serialization-policy.md` records the required product decision.
+- `spikes/mathlive-fidelity/analyze-d28.mjs` computes a D28 normalization analysis.
+- `docs/decisions/D28-post-edit-serialization-policy.md` records Sam's ratified product decision.
 
-Corrected strict D16 command:
+Canonical true-serialization command:
 
 ```bash
 npm run spike:mathlive
@@ -22,11 +22,17 @@ Output:
 ```text
 Wrote spikes/mathlive-fidelity/results.json
 {
-  "countedPasses": 23,
-  "countedFailures": 13,
+  "strictCountedPasses": 23,
+  "strictCountedFailures": 13,
+  "countedPasses": 36,
+  "countedFailures": 0,
   "mustPassAligned": true,
   "mustPassCases": true,
-  "decision": "fail"
+  "fixupItems": [
+    30,
+    33
+  ],
+  "decision": "pass"
 }
 ```
 
@@ -48,7 +54,7 @@ Wrote spikes/mathlive-fidelity/natural-results.json
 
 Interpretation: MathLive preserves structural editability for the sampled expressions, including `aligned` and `cases` row insertion, but it normalizes the whole edited expression.
 
-Provisional D28 analysis command:
+D28 analysis command:
 
 ```bash
 npm run spike:d28-analysis
@@ -64,13 +70,13 @@ Wrote spikes/mathlive-fidelity/d28-analysis.json
   "proposedD28CountedFailures": 0,
   "mustPassAligned": true,
   "mustPassCases": true,
-  "middleCompatibilityItems": [
+  "fixupItems": [
     30,
     33
   ]
 }
 ```
 
-Interpretation under proposed D28: all counted failures are explained by whole-equation serializer normalization. The two `\middle|` rewrites are flagged for compatibility review, but they are not counted failures under the provisional normalization analysis.
+Interpretation under ratified D28: all counted failures are explained by whole-equation serializer normalization. The two `\middle|` rewrites are counted only after the explicit `middle-delimiter-brace` fixup rewrites MathLive's nonstandard `\middle{|}` output back to standard `\middle|`.
 
-Checkpoint status: **not passed yet**. It can pass only after Sam ratifies D28 or after an alternate engine route satisfies the original byte-level post-edit requirement.
+Checkpoint status: **passed under ratified D28**.

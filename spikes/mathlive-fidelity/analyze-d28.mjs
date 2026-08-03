@@ -1,44 +1,27 @@
 import { readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
+import { classifyD28, normalizeD28 } from "./d28-tools.mjs";
 
 const repoRoot = path.resolve(import.meta.dirname, "../..");
 const spikeDir = path.join(repoRoot, "spikes/mathlive-fidelity");
 const resultPath = path.join(spikeDir, "results.json");
 const analysisPath = path.join(spikeDir, "d28-analysis.json");
 
-function normalizeD28(value) {
-  let normalized = value;
-  normalized = normalized.replace(/\s+/g, "");
-  normalized = normalized.replace(/\\left/g, "").replace(/\\right/g, "");
-  normalized = normalized.replace(/\\middle\{\|\}/g, "\\middle|");
-  normalized = normalized.replace(/([A-Za-z])\^\{\\prime\}/g, "$1'");
-  normalized = normalized.replace(/(\\[A-Za-z]+\{[^{}]+\})\^\{\\prime\}/g, "$1'");
-  normalized = normalized.replace(/\\(t?frac)\{([^{}])\}\{([^{}])\}/g, "\\$1$2$3");
-  normalized = normalized.replace(/\\sqrt\{([^{}])\}/g, "\\sqrt$1");
-  normalized = normalized.replace(/_\{([A-Za-z0-9+\-=])\}/g, "_$1");
-  normalized = normalized.replace(/\^\{([A-Za-z0-9+\-=])\}/g, "^$1");
-  normalized = normalized.replace(/_\{(\\[A-Za-z]+)\}/g, "_$1");
-  normalized = normalized.replace(/\^\{(\\[A-Za-z]+)\}/g, "^$1");
-  normalized = normalized.replace(/\\mathrm\{([A-Za-z]+)\}_([A-Za-z0-9])/g, "\\mathrm{$1_$2}");
-  normalized = normalized.replace(/\\mathrm\{([A-Za-z]+)([0-9])([A-Za-z]+)\}_([0-9])/g, "\\mathrm{$1$2$3_$4}");
-  normalized = normalized.replace(/\\mathrm\{([A-Za-z]+_[0-9]+[A-Za-z]+)\}_([0-9])/g, "\\mathrm{$1_$2}");
-  normalized = normalized.replace(/\\longrightarrow\{([A-Za-z])\}/g, "\\longrightarrow$1");
-  return normalized;
-}
-
 const results = JSON.parse(await readFile(resultPath, "utf8"));
 const items = results.items.map((item) => {
+  const output = item.output ?? item.serializerOutput;
   const inputD28 = normalizeD28(item.input);
-  const outputD28 = normalizeD28(item.output);
-  const middleRewrite = item.output.includes("\\middle{|}");
+  const outputD28 = normalizeD28(output);
+  const d28 = classifyD28(item.input, output);
   return {
     id: item.id,
     name: item.name,
-    strictPass: item.roundtripPass,
-    proposedD28Pass: inputD28 === outputD28,
-    requiresMiddleCompatibilityCheck: middleRewrite,
+    strictPass: item.strictPass,
+    proposedD28Pass: d28.pass,
+    fixupsApplied: item.fixupsApplied ?? [],
     input: item.input,
-    output: item.output,
+    serializerOutput: item.serializerOutput,
+    output,
     normalizedInput: inputD28,
     normalizedOutput: outputD28,
   };
@@ -57,7 +40,7 @@ const analysis = {
     "treat r' and r^{\\prime} as equivalent",
     "treat MathLive \\mathrm argument/subscript restructuring as equivalent when token order is unchanged",
     "treat \\longrightarrow{E} and \\longrightarrow E as equivalent for single-token following arguments",
-    "flag \\middle| to \\middle{|} for external compatibility review",
+    "apply explicit fixup for MathLive's nonstandard \\middle{|} before comparison and before any commit to a note",
   ],
   summary: {
     strictCountedPasses: counted.filter((item) => item.strictPass).length,
@@ -65,7 +48,7 @@ const analysis = {
     proposedD28CountedFailures: counted.filter((item) => !item.proposedD28Pass).length,
     mustPassAligned: items.find((item) => item.id === 22)?.proposedD28Pass === true,
     mustPassCases: items.find((item) => item.id === 25)?.proposedD28Pass === true,
-    middleCompatibilityItems: items.filter((item) => item.requiresMiddleCompatibilityCheck).map((item) => item.id),
+    fixupItems: items.filter((item) => item.fixupsApplied.length > 0).map((item) => item.id),
   },
   failures: items.filter((item) => !item.proposedD28Pass),
   items,

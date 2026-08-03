@@ -3,33 +3,13 @@ import { chromium } from "playwright";
 import { createServer } from "node:http";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
+import { applySerializerFixups, classifyD28, classifyStrict } from "./d28-tools.mjs";
 
 const repoRoot = path.resolve(import.meta.dirname, "../..");
 const spikeDir = path.resolve(repoRoot, "spikes/mathlive-fidelity");
 const tmpDir = path.resolve(repoRoot, ".tmp/mathlive-fidelity");
 const batteryPath = path.join(spikeDir, "battery.json");
 const resultPath = path.join(spikeDir, "results.json");
-
-function normalizeCosmetic(value) {
-  return value
-    .replace(/\\left/g, "")
-    .replace(/\\right/g, "")
-    .replace(/\^\{([A-Za-z0-9+\-=])\}/g, "^$1")
-    .replace(/_\{([A-Za-z0-9+\-=])\}/g, "_$1")
-    .replace(/\s+/g, "");
-}
-
-function classify(input, output, tolerance) {
-  if (input === output) return { diffClass: "identical", pass: true };
-  if (tolerance === "identical") return { diffClass: "destructive", pass: false };
-  if (normalizeCosmetic(input) === normalizeCosmetic(output)) {
-    return { diffClass: "cosmetic", pass: true };
-  }
-  if (tolerance === "cosmetic-or-raw") {
-    return { diffClass: "raw", pass: true };
-  }
-  return { diffClass: "destructive", pass: false };
-}
 
 function staticServer(root) {
   const server = createServer(async (req, res) => {
@@ -83,30 +63,40 @@ try {
     }, item.latex);
     await page.waitForTimeout(50);
     const cachedOutput = await page.evaluate(() => window.spikeMathlive.getValue("latex"));
-    const output = await page.evaluate(() => window.spikeMathlive.getValue("latex-expanded"));
-    const result = classify(item.latex, output, item.tolerance);
+    const serializerOutput = await page.evaluate(() => window.spikeMathlive.getValue("latex-expanded"));
+    const fixed = applySerializerFixups(serializerOutput);
+    const strictResult = classifyStrict(item.latex, serializerOutput, item.tolerance);
+    const d28Result = classifyD28(item.latex, fixed.output);
     items.push({
       id: item.id,
       name: item.name,
       input: item.latex,
       cachedOutput,
-      output,
+      serializerOutput,
+      output: fixed.output,
       outputFormat: "latex-expanded",
+      fixupsApplied: fixed.fixups,
       tolerance: item.tolerance,
       mustPass: item.mustPass,
-      diffClass: result.diffClass,
-      roundtripPass: result.pass,
+      strictDiffClass: strictResult.diffClass,
+      strictPass: strictResult.pass,
+      d28DiffClass: d28Result.diffClass,
+      d28Pass: d28Result.pass,
+      diffClass: d28Result.diffClass,
+      roundtripPass: d28Result.pass,
       naturalEditPass: null,
-      notes: result.pass ? "" : "Round-trip output is outside D16 cosmetic tolerance.",
+      notes: d28Result.pass ? "" : "Round-trip output is outside ratified D28 tolerance.",
     });
   }
 
   const counted = items.filter((item) => item.id <= 36);
-  const countedPasses = counted.filter((item) => item.roundtripPass).length;
+  const strictCountedPasses = counted.filter((item) => item.strictPass).length;
+  const strictCountedFailures = counted.length - strictCountedPasses;
+  const countedPasses = counted.filter((item) => item.d28Pass).length;
   const countedFailures = counted.length - countedPasses;
-  const mustPassAligned = items.find((item) => item.id === 22)?.roundtripPass === true;
-  const mustPassCases = items.find((item) => item.id === 25)?.roundtripPass === true;
-  const singleLinePasses = items.filter((item) => item.id <= 20 && item.roundtripPass).length;
+  const mustPassAligned = items.find((item) => item.id === 22)?.d28Pass === true;
+  const mustPassCases = items.find((item) => item.id === 25)?.d28Pass === true;
+  const singleLinePasses = items.filter((item) => item.id <= 20 && item.d28Pass).length;
   const decision = countedPasses >= 36 && mustPassAligned && mustPassCases
     ? "pass"
     : countedPasses >= 36
@@ -118,13 +108,16 @@ try {
   const results = {
     mathliveVersion: "0.110.0",
     date: "2026-08-03",
-    method: "setValue(input) then getValue('latex-expanded'); cached getValue('latex') retained only for comparison",
+    method: "canonical true-serialization run: setValue(input), read getValue('latex-expanded'), apply explicit sync-layer fixups, classify under ratified D28; cached getValue('latex') retained only for BS-37 comparison",
     items,
     summary: {
+      strictCountedPasses,
+      strictCountedFailures,
       countedPasses,
       countedFailures,
       mustPassAligned,
       mustPassCases,
+      fixupItems: items.filter((item) => item.fixupsApplied.length > 0).map((item) => item.id),
       decision,
     },
   };

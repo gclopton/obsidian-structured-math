@@ -3,6 +3,7 @@ import { chromium } from "playwright";
 import { createServer } from "node:http";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
+import { applySerializerFixups, classifyD28 } from "./d28-tools.mjs";
 
 const repoRoot = path.resolve(import.meta.dirname, "../..");
 const spikeDir = path.resolve(repoRoot, "spikes/mathlive-fidelity");
@@ -52,6 +53,14 @@ const battery = JSON.parse(await readFile(path.join(spikeDir, "battery.json"), "
 const { server, url } = await staticServer(tmpDir);
 const browser = await chromium.launch();
 
+function removeOneInsertedToken(value) {
+  return value.replace("z", "");
+}
+
+function insertedTokenCount(value) {
+  return value.split("z").length - 1;
+}
+
 try {
   const page = await browser.newPage();
   await page.goto(url);
@@ -70,28 +79,34 @@ try {
       moveResults.push(await page.evaluate(() => window.spikeMathlive.execute("moveToNextChar")));
     }
 
-    let afterInsertion = item.latex;
-    for (let attempt = 0; attempt < 6 && afterInsertion === item.latex; attempt += 1) {
+    let afterInsertion = applySerializerFixups(
+      await page.evaluate(() => window.spikeMathlive.getValue("latex-expanded"))
+    ).output;
+    for (let attempt = 0; attempt < 12 && insertedTokenCount(afterInsertion) === 0; attempt += 1) {
       if (attempt > 0) {
         await page.evaluate(() => window.spikeMathlive.execute("moveToNextChar"));
       }
       await page.keyboard.type("z");
       await page.waitForTimeout(50);
-      afterInsertion = await page.evaluate(() => window.spikeMathlive.getValue("latex-expanded"));
+      const serializerOutput = await page.evaluate(() => window.spikeMathlive.getValue("latex-expanded"));
+      afterInsertion = applySerializerFixups(serializerOutput).output;
     }
 
     let rowCommandResult = null;
     let afterRowCommand = null;
     if (item.id === 22 || item.id === 25) {
       rowCommandResult = await page.evaluate(() => window.spikeMathlive.execute("addRowAfter"));
-      afterRowCommand = await page.evaluate(() => window.spikeMathlive.getValue("latex-expanded"));
+      const rowSerializerOutput = await page.evaluate(() => window.spikeMathlive.getValue("latex-expanded"));
+      afterRowCommand = applySerializerFixups(rowSerializerOutput).output;
     }
 
     const changed = afterInsertion !== item.latex;
+    const zCount = insertedTokenCount(afterInsertion);
+    const amendedD28Result = classifyD28(item.latex, removeOneInsertedToken(afterInsertion));
     const stillSerializable = typeof afterInsertion === "string" && afterInsertion.length > 0;
     const navigationWorked = moveResults.some(Boolean);
     const rowWorked = item.id === 22 || item.id === 25
-      ? rowCommandResult === true && afterRowCommand !== afterInsertion
+      ? rowCommandResult === true && afterRowCommand !== afterInsertion && afterRowCommand.includes("\\placeholder{}")
       : true;
 
     items.push({
@@ -99,13 +114,16 @@ try {
       name: item.name,
       navigationWorked,
       changed,
+      insertedTokenCount: zCount,
+      amendedD28Pass: amendedD28Result.pass,
+      amendedD28DiffClass: amendedD28Result.diffClass,
       stillSerializable,
       rowCommandResult,
-      naturalEditPass: navigationWorked && changed && stillSerializable && rowWorked,
+      naturalEditPass: navigationWorked && changed && zCount === 1 && amendedD28Result.pass && stillSerializable && rowWorked,
       input: item.latex,
       afterInsertion,
       afterRowCommand,
-      notes: "Automated probe: move from mathfield start by arrow-equivalent commands, type z, retrying with additional right moves if the first insertion point rejects text; for multiline must-pass items run addRowAfter; serialization measured with getValue('latex-expanded').",
+      notes: "AGENT-DECIDED automated substitute for manual D24 check: move from mathfield start by arrow-equivalent commands, type a single z, verify exactly one z was inserted, remove it, require the remaining output to be D28-equivalent to input, and for multiline must-pass items run addRowAfter and require a placeholder row.",
     });
   }
 

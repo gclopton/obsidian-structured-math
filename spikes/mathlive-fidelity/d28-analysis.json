@@ -10,7 +10,7 @@
     "treat r' and r^{\\prime} as equivalent",
     "treat MathLive \\mathrm argument/subscript restructuring as equivalent when token order is unchanged",
     "treat \\longrightarrow{E} and \\longrightarrow E as equivalent for single-token following arguments",
-    "flag \\middle| to \\middle{|} for external compatibility review"
+    "apply explicit fixup for MathLive's nonstandard \\middle{|} before comparison and before any commit to a note"
   ],
   "summary": {
     "strictCountedPasses": 23,
@@ -18,7 +18,7 @@
     "proposedD28CountedFailures": 0,
     "mustPassAligned": true,
     "mustPassCases": true,
-    "middleCompatibilityItems": [
+    "fixupItems": [
       30,
       33
     ]
@@ -29,8 +29,9 @@
       "name": "operatorname-residue",
       "strictPass": true,
       "proposedD28Pass": false,
-      "requiresMiddleCompatibilityCheck": false,
+      "fixupsApplied": [],
       "input": "\\operatorname{Res}_{z=z_0} f(z)",
+      "serializerOutput": "\\operatorname{\\mathrm{Res}}_{z=z_0}f(z)",
       "output": "\\operatorname{\\mathrm{Res}}_{z=z_0}f(z)",
       "normalizedInput": "\\operatorname{Res}_{z=z_0}f(z)",
       "normalizedOutput": "\\operatorname{\\mathrm{Res}}_{z=z_0}f(z)"
@@ -40,8 +41,9 @@
       "name": "continued-fraction-slash",
       "strictPass": true,
       "proposedD28Pass": false,
-      "requiresMiddleCompatibilityCheck": false,
+      "fixupsApplied": [],
       "input": "e^{-2\\pi} \\big/ \\Bigl(1+\\frac{e^{-4\\pi}}{1+\\cdots}\\Bigr)",
+      "serializerOutput": "e^{-2\\pi}\\big.\\Bigl(1+\\frac{e^{-4\\pi}}{1+\\cdots}\\Bigr)",
       "output": "e^{-2\\pi}\\big.\\Bigl(1+\\frac{e^{-4\\pi}}{1+\\cdots}\\Bigr)",
       "normalizedInput": "e^{-2\\pi}\\big/\\Bigl(1+\\frac{e^{-4\\pi}}{1+\\cdots}\\Bigr)",
       "normalizedOutput": "e^{-2\\pi}\\big.\\Bigl(1+\\frac{e^{-4\\pi}}{1+\\cdots}\\Bigr)"
@@ -53,8 +55,9 @@
       "name": "oxygen-vacancy",
       "strictPass": true,
       "proposedD28Pass": true,
-      "requiresMiddleCompatibilityCheck": false,
+      "fixupsApplied": [],
       "input": "V_{\\mathrm{O}}^{\\bullet\\bullet}",
+      "serializerOutput": "V_{\\mathrm{O}}^{\\bullet\\bullet}",
       "output": "V_{\\mathrm{O}}^{\\bullet\\bullet}",
       "normalizedInput": "V_{\\mathrm{O}}^{\\bullet\\bullet}",
       "normalizedOutput": "V_{\\mathrm{O}}^{\\bullet\\bullet}"
@@ -64,8 +67,9 @@
       "name": "oxygen-vacancy-reaction",
       "strictPass": false,
       "proposedD28Pass": true,
-      "requiresMiddleCompatibilityCheck": false,
+      "fixupsApplied": [],
       "input": "\\mathrm{O_O} \\rightarrow V_{\\mathrm{O}}^{\\bullet\\bullet} + \\tfrac{1}{2}\\mathrm{O_2} + 2e^-",
+      "serializerOutput": "\\mathrm{O}_{O}\\rightarrow V_{\\mathrm{O}}^{\\bullet\\bullet}+\\tfrac12\\mathrm{O}_2+2e^{-}",
       "output": "\\mathrm{O}_{O}\\rightarrow V_{\\mathrm{O}}^{\\bullet\\bullet}+\\tfrac12\\mathrm{O}_2+2e^{-}",
       "normalizedInput": "\\mathrm{O_O}arrowV_{\\mathrm{O}}^{\\bullet\\bullet}+\\tfrac12\\mathrm{O_2}+2e^-",
       "normalizedOutput": "\\mathrm{O_O}arrowV_{\\mathrm{O}}^{\\bullet\\bullet}+\\tfrac12\\mathrm{O_2}+2e^-"
@@ -75,8 +79,9 @@
       "name": "cerium-reduction",
       "strictPass": true,
       "proposedD28Pass": true,
-      "requiresMiddleCompatibilityCheck": false,
+      "fixupsApplied": [],
       "input": "2\\,\\mathrm{Ce}^{4+} + 2e^- \\rightarrow 2\\,\\mathrm{Ce}^{3+}",
+      "serializerOutput": "2\\,\\mathrm{Ce}^{4+}+2e^{-}\\rightarrow2\\,\\mathrm{Ce}^{3+}",
       "output": "2\\,\\mathrm{Ce}^{4+}+2e^{-}\\rightarrow2\\,\\mathrm{Ce}^{3+}",
       "normalizedInput": "2\\,\\mathrm{Ce}^{4+}+2e^-arrow2\\,\\mathrm{Ce}^{3+}",
       "normalizedOutput": "2\\,\\mathrm{Ce}^{4+}+2e^-arrow2\\,\\mathrm{Ce}^{3+}"
@@ -86,8 +91,9 @@
       "name": "cerium-charge-state",
       "strictPass": true,
       "proposedD28Pass": true,
-      "requiresMiddleCompatibilityCheck": false,
+      "fixupsApplied": [],
       "input": "\\mathrm{Ce}^{4+}\\,(4f^0) \\leftrightarrow \\mathrm{Ce}^{3+}\\,(4f^1)",
+      "serializerOutput": "\\mathrm{Ce}^{4+}\\,(4f^0)\\leftrightarrow\\mathrm{Ce}^{3+}\\,(4f^1)",
       "output": "\\mathrm{Ce}^{4+}\\,(4f^0)\\leftrightarrow\\mathrm{Ce}^{3+}\\,(4f^1)",
       "normalizedInput": "\\mathrm{Ce}^{4+}\\,(4f^0)rightarrow\\mathrm{Ce}^{3+}\\,(4f^1)",
       "normalizedOutput": "\\mathrm{Ce}^{4+}\\,(4f^0)rightarrow\\mathrm{Ce}^{3+}\\,(4f^1)"
@@ -97,8 +103,9 @@
       "name": "ceria-reduction",
       "strictPass": false,
       "proposedD28Pass": true,
-      "requiresMiddleCompatibilityCheck": false,
+      "fixupsApplied": [],
       "input": "\\mathrm{CeO_2} \\rightarrow \\tfrac{1}{2}\\mathrm{Ce_2O_3} + \\tfrac{1}{4}\\mathrm{O_2}",
+      "serializerOutput": "\\mathrm{CeO}_2\\rightarrow\\tfrac12\\mathrm{Ce_2O}_3+\\tfrac14\\mathrm{O}_2",
       "output": "\\mathrm{CeO}_2\\rightarrow\\tfrac12\\mathrm{Ce_2O}_3+\\tfrac14\\mathrm{O}_2",
       "normalizedInput": "\\mathrm{CeO_2}arrow\\tfrac12\\mathrm{Ce_2O_3}+\\tfrac14\\mathrm{O_2}",
       "normalizedOutput": "\\mathrm{CeO_2}arrow\\tfrac12\\mathrm{Ce_2O_3}+\\tfrac14\\mathrm{O_2}"
@@ -108,8 +115,9 @@
       "name": "u-effective",
       "strictPass": true,
       "proposedD28Pass": true,
-      "requiresMiddleCompatibilityCheck": false,
+      "fixupsApplied": [],
       "input": "U_{\\mathrm{eff}} = U - J = 5.0\\ \\mathrm{eV}",
+      "serializerOutput": "U_{\\mathrm{eff}}=U-J=5.0\\ \\mathrm{eV}",
       "output": "U_{\\mathrm{eff}}=U-J=5.0\\ \\mathrm{eV}",
       "normalizedInput": "U_{\\mathrm{eff}}=U-J=5.0\\\\mathrm{eV}",
       "normalizedOutput": "U_{\\mathrm{eff}}=U-J=5.0\\\\mathrm{eV}"
@@ -119,8 +127,9 @@
       "name": "ce-o-distance",
       "strictPass": false,
       "proposedD28Pass": true,
-      "requiresMiddleCompatibilityCheck": false,
+      "fixupsApplied": [],
       "input": "d_0(\\text{Ce-O}) = a\\sqrt{3}/4",
+      "serializerOutput": "d_0(\\text{Ce-O})=a\\sqrt3/4",
       "output": "d_0(\\text{Ce-O})=a\\sqrt3/4",
       "normalizedInput": "d_0(\\text{Ce-O})=a\\sqrt3/4",
       "normalizedOutput": "d_0(\\text{Ce-O})=a\\sqrt3/4"
@@ -130,8 +139,9 @@
       "name": "dielectric-range",
       "strictPass": false,
       "proposedD28Pass": true,
-      "requiresMiddleCompatibilityCheck": false,
+      "fixupsApplied": [],
       "input": "\\varepsilon_\\infty \\approx 5\\text{-}7,\\quad \\varepsilon_0 \\approx 20\\text{-}30",
+      "serializerOutput": "\\varepsilon_{\\infty}\\approx5\\text{-}7,\\quad\\varepsilon_0\\approx20\\text{-}30",
       "output": "\\varepsilon_{\\infty}\\approx5\\text{-}7,\\quad\\varepsilon_0\\approx20\\text{-}30",
       "normalizedInput": "\\varepsilon_\\infty\\approx5\\text{-}7,\\quad\\varepsilon_0\\approx20\\text{-}30",
       "normalizedOutput": "\\varepsilon_\\infty\\approx5\\text{-}7,\\quad\\varepsilon_0\\approx20\\text{-}30"
@@ -141,8 +151,9 @@
       "name": "dudarev-penalty",
       "strictPass": true,
       "proposedD28Pass": true,
-      "requiresMiddleCompatibilityCheck": false,
+      "fixupsApplied": [],
       "input": "E_U = \\frac{U_{\\mathrm{eff}}}{2} \\sum_{I,\\sigma} \\mathrm{Tr}\\left[ n^{I\\sigma} - n^{I\\sigma} n^{I\\sigma} \\right]",
+      "serializerOutput": "E_{U}=\\frac{U_{\\mathrm{eff}}}{2}\\sum_{I,\\sigma}\\mathrm{Tr}\\left[n^{I\\sigma}-n^{I\\sigma}n^{I\\sigma}\\right]",
       "output": "E_{U}=\\frac{U_{\\mathrm{eff}}}{2}\\sum_{I,\\sigma}\\mathrm{Tr}\\left[n^{I\\sigma}-n^{I\\sigma}n^{I\\sigma}\\right]",
       "normalizedInput": "E_U=\\frac{U_{\\mathrm{eff}}}{2}\\sum_{I,\\sigma}\\mathrm{Tr}[n^{I\\sigma}-n^{I\\sigma}n^{I\\sigma}]",
       "normalizedOutput": "E_U=\\frac{U_{\\mathrm{eff}}}{2}\\sum_{I,\\sigma}\\mathrm{Tr}[n^{I\\sigma}-n^{I\\sigma}n^{I\\sigma}]"
@@ -152,8 +163,9 @@
       "name": "delocalized-penalty",
       "strictPass": true,
       "proposedD28Pass": true,
-      "requiresMiddleCompatibilityCheck": false,
+      "fixupsApplied": [],
       "input": "E_U^{\\mathrm{deloc}} = \\frac{U_{\\mathrm{eff}}}{2}\\sum_{i=1}^{M}\\frac{1}{M}\\left(1-\\frac{1}{M}\\right)",
+      "serializerOutput": "E_{U}^{\\mathrm{deloc}}=\\frac{U_{\\mathrm{eff}}}{2}\\sum_{i=1}^{M}\\frac{1}{M}\\left(1-\\frac{1}{M}\\right)",
       "output": "E_{U}^{\\mathrm{deloc}}=\\frac{U_{\\mathrm{eff}}}{2}\\sum_{i=1}^{M}\\frac{1}{M}\\left(1-\\frac{1}{M}\\right)",
       "normalizedInput": "E_U^{\\mathrm{deloc}}=\\frac{U_{\\mathrm{eff}}}{2}\\sum_{i=1}^M\\frac1M(1-\\frac1M)",
       "normalizedOutput": "E_U^{\\mathrm{deloc}}=\\frac{U_{\\mathrm{eff}}}{2}\\sum_{i=1}^M\\frac1M(1-\\frac1M)"
@@ -163,8 +175,9 @@
       "name": "u-potential-derivative",
       "strictPass": false,
       "proposedD28Pass": true,
-      "requiresMiddleCompatibilityCheck": false,
+      "fixupsApplied": [],
       "input": "V_{U,m} = \\frac{\\partial E_U}{\\partial \\lambda_m} = U_{\\mathrm{eff}}\\left(\\frac{1}{2}-\\lambda_m\\right)",
+      "serializerOutput": "V_{U,m}=\\frac{\\partial E_{U}}{\\partial\\lambda_{m}}=U_{\\mathrm{eff}}\\left(\\frac12-\\lambda_{m}\\right)",
       "output": "V_{U,m}=\\frac{\\partial E_{U}}{\\partial\\lambda_{m}}=U_{\\mathrm{eff}}\\left(\\frac12-\\lambda_{m}\\right)",
       "normalizedInput": "V_{U,m}=\\frac{\\partialE_U}{\\partial\\lambda_m}=U_{\\mathrm{eff}}(\\frac12-\\lambda_m)",
       "normalizedOutput": "V_{U,m}=\\frac{\\partialE_U}{\\partial\\lambda_m}=U_{\\mathrm{eff}}(\\frac12-\\lambda_m)"
@@ -174,8 +187,9 @@
       "name": "hartree-energy",
       "strictPass": false,
       "proposedD28Pass": true,
-      "requiresMiddleCompatibilityCheck": false,
+      "fixupsApplied": [],
       "input": "E_{\\mathrm{H}}[n] = \\frac{1}{2}\\iint \\frac{n(\\mathbf{r})\\,n(\\mathbf{r}')}{\\lvert \\mathbf{r}-\\mathbf{r}'\\rvert}\\,d\\mathbf{r}\\,d\\mathbf{r}'",
+      "serializerOutput": "E_{\\mathrm{H}}[n]=\\frac12\\iint\\frac{n(\\mathbf{r})\\,n(\\mathbf{r}^{\\prime})}{\\lvert\\mathbf{r}-\\mathbf{r}^{\\prime}\\rvert}\\,d\\mathbf{r}\\,d\\mathbf{r}^{\\prime}",
       "output": "E_{\\mathrm{H}}[n]=\\frac12\\iint\\frac{n(\\mathbf{r})\\,n(\\mathbf{r}^{\\prime})}{\\lvert\\mathbf{r}-\\mathbf{r}^{\\prime}\\rvert}\\,d\\mathbf{r}\\,d\\mathbf{r}^{\\prime}",
       "normalizedInput": "E_{\\mathrm{H}}[n]=\\frac12\\iint\\frac{n(\\mathbf{r})\\,n(\\mathbf{r}')}{\\lvert\\mathbf{r}-\\mathbf{r}'\\rvert}\\,d\\mathbf{r}\\,d\\mathbf{r}'",
       "normalizedOutput": "E_{\\mathrm{H}}[n]=\\frac12\\iint\\frac{n(\\mathbf{r})\\,n(\\mathbf{r}')}{\\lvert\\mathbf{r}-\\mathbf{r}'\\rvert}\\,d\\mathbf{r}\\,d\\mathbf{r}'"
@@ -185,8 +199,9 @@
       "name": "piecewise-linear-energy",
       "strictPass": true,
       "proposedD28Pass": true,
-      "requiresMiddleCompatibilityCheck": false,
+      "fixupsApplied": [],
       "input": "E(N+\\eta) = (1-\\eta)\\,E(N) + \\eta\\,E(N+1), \\qquad 0 \\le \\eta \\le 1",
+      "serializerOutput": "E(N+\\eta)=(1-\\eta)\\,E(N)+\\eta\\,E(N+1),\\qquad0\\le\\eta\\le1",
       "output": "E(N+\\eta)=(1-\\eta)\\,E(N)+\\eta\\,E(N+1),\\qquad0\\le\\eta\\le1",
       "normalizedInput": "E(N+\\eta)=(1-\\eta)\\,E(N)+\\eta\\,E(N+1),\\qquad0\\le\\eta\\le1",
       "normalizedOutput": "E(N+\\eta)=(1-\\eta)\\,E(N)+\\eta\\,E(N+1),\\qquad0\\le\\eta\\le1"
@@ -196,8 +211,9 @@
       "name": "hse-functional",
       "strictPass": true,
       "proposedD28Pass": true,
-      "requiresMiddleCompatibilityCheck": false,
+      "fixupsApplied": [],
       "input": "E_{\\mathrm{xc}}^{\\mathrm{HSE}} = a\\,E_{\\mathrm{x}}^{\\mathrm{HF,SR}}(\\omega) + (1-a)\\,E_{\\mathrm{x}}^{\\mathrm{PBE,SR}}(\\omega) + E_{\\mathrm{x}}^{\\mathrm{PBE,LR}}(\\omega) + E_{\\mathrm{c}}^{\\mathrm{PBE}}",
+      "serializerOutput": "E_{\\mathrm{xc}}^{\\mathrm{HSE}}=a\\,E_{\\mathrm{x}}^{\\mathrm{HF,SR}}(\\omega)+(1-a)\\,E_{\\mathrm{x}}^{\\mathrm{PBE,SR}}(\\omega)+E_{\\mathrm{x}}^{\\mathrm{PBE,LR}}(\\omega)+E_{\\mathrm{c}}^{\\mathrm{PBE}}",
       "output": "E_{\\mathrm{xc}}^{\\mathrm{HSE}}=a\\,E_{\\mathrm{x}}^{\\mathrm{HF,SR}}(\\omega)+(1-a)\\,E_{\\mathrm{x}}^{\\mathrm{PBE,SR}}(\\omega)+E_{\\mathrm{x}}^{\\mathrm{PBE,LR}}(\\omega)+E_{\\mathrm{c}}^{\\mathrm{PBE}}",
       "normalizedInput": "E_{\\mathrm{xc}}^{\\mathrm{HSE}}=a\\,E_{\\mathrm{x}}^{\\mathrm{HF,SR}}(\\omega)+(1-a)\\,E_{\\mathrm{x}}^{\\mathrm{PBE,SR}}(\\omega)+E_{\\mathrm{x}}^{\\mathrm{PBE,LR}}(\\omega)+E_{\\mathrm{c}}^{\\mathrm{PBE}}",
       "normalizedOutput": "E_{\\mathrm{xc}}^{\\mathrm{HSE}}=a\\,E_{\\mathrm{x}}^{\\mathrm{HF,SR}}(\\omega)+(1-a)\\,E_{\\mathrm{x}}^{\\mathrm{PBE,SR}}(\\omega)+E_{\\mathrm{x}}^{\\mathrm{PBE,LR}}(\\omega)+E_{\\mathrm{c}}^{\\mathrm{PBE}}"
@@ -207,8 +223,9 @@
       "name": "structures-to-energy-forces",
       "strictPass": false,
       "proposedD28Pass": true,
-      "requiresMiddleCompatibilityCheck": false,
+      "fixupsApplied": [],
       "input": "\\{\\mathbf{R}_i, Z_i\\} \\longrightarrow E, \\qquad \\mathbf{F}_i = -\\frac{\\partial E}{\\partial \\mathbf{R}_i}",
+      "serializerOutput": "\\{\\mathbf{R}_{i},Z_{i}\\}\\longrightarrow{E},\\qquad\\mathbf{F}_{i}=-\\frac{\\partial E}{\\partial\\mathbf{R}_{i}}",
       "output": "\\{\\mathbf{R}_{i},Z_{i}\\}\\longrightarrow{E},\\qquad\\mathbf{F}_{i}=-\\frac{\\partial E}{\\partial\\mathbf{R}_{i}}",
       "normalizedInput": "\\{\\mathbf{R}_i,Z_i\\}\\longrightarrowE,\\qquad\\mathbf{F}_i=-\\frac{\\partialE}{\\partial\\mathbf{R}_i}",
       "normalizedOutput": "\\{\\mathbf{R}_i,Z_i\\}\\longrightarrowE,\\qquad\\mathbf{F}_i=-\\frac{\\partialE}{\\partial\\mathbf{R}_i}"
@@ -218,8 +235,9 @@
       "name": "spin-orbit-hamiltonian",
       "strictPass": true,
       "proposedD28Pass": true,
-      "requiresMiddleCompatibilityCheck": false,
+      "fixupsApplied": [],
       "input": "\\hat{H}_{\\mathrm{SOC}} = \\xi(r)\\,\\mathbf{L}\\cdot\\mathbf{S}",
+      "serializerOutput": "\\hat{H}_{\\mathrm{SOC}}=\\xi(r)\\,\\mathbf{L}\\cdot\\mathbf{S}",
       "output": "\\hat{H}_{\\mathrm{SOC}}=\\xi(r)\\,\\mathbf{L}\\cdot\\mathbf{S}",
       "normalizedInput": "\\hat{H}_{\\mathrm{SOC}}=\\xi(r)\\,\\mathbf{L}\\cdot\\mathbf{S}",
       "normalizedOutput": "\\hat{H}_{\\mathrm{SOC}}=\\xi(r)\\,\\mathbf{L}\\cdot\\mathbf{S}"
@@ -229,8 +247,9 @@
       "name": "charged-defect-scaling",
       "strictPass": true,
       "proposedD28Pass": true,
-      "requiresMiddleCompatibilityCheck": false,
+      "fixupsApplied": [],
       "input": "\\Delta E \\sim \\frac{q^2}{\\varepsilon L}",
+      "serializerOutput": "\\Delta E\\sim\\frac{q^2}{\\varepsilon L}",
       "output": "\\Delta E\\sim\\frac{q^2}{\\varepsilon L}",
       "normalizedInput": "\\DeltaE\\sim\\frac{q^2}{\\varepsilonL}",
       "normalizedOutput": "\\DeltaE\\sim\\frac{q^2}{\\varepsilonL}"
@@ -240,8 +259,9 @@
       "name": "delocalized-limit",
       "strictPass": true,
       "proposedD28Pass": true,
-      "requiresMiddleCompatibilityCheck": false,
+      "fixupsApplied": [],
       "input": "\\lim_{M \\to \\infty} \\frac{U_{\\mathrm{eff}}}{2}\\left(1 - \\frac{1}{M}\\right) = \\frac{U_{\\mathrm{eff}}}{2}",
+      "serializerOutput": "\\lim_{M\\to\\infty}\\frac{U_{\\mathrm{eff}}}{2}\\left(1-\\frac{1}{M}\\right)=\\frac{U_{\\mathrm{eff}}}{2}",
       "output": "\\lim_{M\\to\\infty}\\frac{U_{\\mathrm{eff}}}{2}\\left(1-\\frac{1}{M}\\right)=\\frac{U_{\\mathrm{eff}}}{2}",
       "normalizedInput": "\\lim_{M\\to\\infty}\\frac{U_{\\mathrm{eff}}}{2}(1-\\frac1M)=\\frac{U_{\\mathrm{eff}}}{2}",
       "normalizedOutput": "\\lim_{M\\to\\infty}\\frac{U_{\\mathrm{eff}}}{2}(1-\\frac1M)=\\frac{U_{\\mathrm{eff}}}{2}"
@@ -251,8 +271,9 @@
       "name": "domain-integral",
       "strictPass": true,
       "proposedD28Pass": true,
-      "requiresMiddleCompatibilityCheck": false,
+      "fixupsApplied": [],
       "input": "\\int_{\\Omega} \\rho(\\mathbf{x})\\,\\mathrm{d}V",
+      "serializerOutput": "\\int_{\\Omega}\\rho(\\mathbf{x})\\,\\mathrm{d}V",
       "output": "\\int_{\\Omega}\\rho(\\mathbf{x})\\,\\mathrm{d}V",
       "normalizedInput": "\\int_\\Omega\\rho(\\mathbf{x})\\,\\mathrm{d}V",
       "normalizedOutput": "\\int_\\Omega\\rho(\\mathbf{x})\\,\\mathrm{d}V"
@@ -262,8 +283,9 @@
       "name": "quadratic-formula",
       "strictPass": false,
       "proposedD28Pass": true,
-      "requiresMiddleCompatibilityCheck": false,
+      "fixupsApplied": [],
       "input": "x = \\frac{-b \\pm \\sqrt{b^2 - 4ac}}{2a}",
+      "serializerOutput": "x=\\frac{-b\\pm\\sqrt{b^2-4ac}}{2a}",
       "output": "x=\\frac{-b\\pm\\sqrt{b^2-4ac}}{2a}",
       "normalizedInput": "x=\\frac{-b\\pm\\sqrt{b^2-4ac}}{2a}",
       "normalizedOutput": "x=\\frac{-b\\pm\\sqrt{b^2-4ac}}{2a}"
@@ -273,8 +295,9 @@
       "name": "pmatrix-two-by-two",
       "strictPass": false,
       "proposedD28Pass": true,
-      "requiresMiddleCompatibilityCheck": false,
+      "fixupsApplied": [],
       "input": "\\begin{pmatrix} a_1 & a_3 \\\\ a_2 & a_4 \\end{pmatrix}",
+      "serializerOutput": "\\begin{pmatrix}a_1 & a_3\\\\ a_2 & a_4\\end{pmatrix}",
       "output": "\\begin{pmatrix}a_1 & a_3\\\\ a_2 & a_4\\end{pmatrix}",
       "normalizedInput": "\\begin{pmatrix}a_1&a_3\\\\a_2&a_4\\end{pmatrix}",
       "normalizedOutput": "\\begin{pmatrix}a_1&a_3\\\\a_2&a_4\\end{pmatrix}"
@@ -284,8 +307,9 @@
       "name": "basic-aligned",
       "strictPass": true,
       "proposedD28Pass": true,
-      "requiresMiddleCompatibilityCheck": false,
+      "fixupsApplied": [],
       "input": "\\begin{aligned} 3(a+b)+b-a &= 3a+3b+b \\\\ &= 3a+4b-a \\\\ &= 2a+4b \\end{aligned}",
+      "serializerOutput": "\\begin{aligned}3(a+b)+b-a & =3a+3b+b\\\\  & =3a+4b-a\\\\  & =2a+4b\\end{aligned}",
       "output": "\\begin{aligned}3(a+b)+b-a & =3a+3b+b\\\\  & =3a+4b-a\\\\  & =2a+4b\\end{aligned}",
       "normalizedInput": "\\begin{aligned}3(a+b)+b-a&=3a+3b+b\\\\&=3a+4b-a\\\\&=2a+4b\\end{aligned}",
       "normalizedOutput": "\\begin{aligned}3(a+b)+b-a&=3a+3b+b\\\\&=3a+4b-a\\\\&=2a+4b\\end{aligned}"
@@ -295,8 +319,9 @@
       "name": "identity-bmatrix",
       "strictPass": false,
       "proposedD28Pass": true,
-      "requiresMiddleCompatibilityCheck": false,
+      "fixupsApplied": [],
       "input": "\\begin{bmatrix} 1 & 0 & 0 \\\\ 0 & 1 & 0 \\\\ 0 & 0 & 1 \\end{bmatrix}",
+      "serializerOutput": "\\begin{bmatrix}1 & 0 & 0\\\\ 0 & 1 & 0\\\\ 0 & 0 & 1\\end{bmatrix}",
       "output": "\\begin{bmatrix}1 & 0 & 0\\\\ 0 & 1 & 0\\\\ 0 & 0 & 1\\end{bmatrix}",
       "normalizedInput": "\\begin{bmatrix}1&0&0\\\\0&1&0\\\\0&0&1\\end{bmatrix}",
       "normalizedOutput": "\\begin{bmatrix}1&0&0\\\\0&1&0\\\\0&0&1\\end{bmatrix}"
@@ -306,8 +331,9 @@
       "name": "determinant",
       "strictPass": true,
       "proposedD28Pass": true,
-      "requiresMiddleCompatibilityCheck": false,
+      "fixupsApplied": [],
       "input": "\\begin{vmatrix} a & b \\\\ c & d \\end{vmatrix} = ad - bc",
+      "serializerOutput": "\\begin{vmatrix}a & b\\\\ c & d\\end{vmatrix}=ad-bc",
       "output": "\\begin{vmatrix}a & b\\\\ c & d\\end{vmatrix}=ad-bc",
       "normalizedInput": "\\begin{vmatrix}a&b\\\\c&d\\end{vmatrix}=ad-bc",
       "normalizedOutput": "\\begin{vmatrix}a&b\\\\c&d\\end{vmatrix}=ad-bc"
@@ -317,8 +343,9 @@
       "name": "basic-cases",
       "strictPass": true,
       "proposedD28Pass": true,
-      "requiresMiddleCompatibilityCheck": false,
+      "fixupsApplied": [],
       "input": "\\begin{cases} a_1 & \\text{if } k > 0 \\\\ a_2 & \\text{if } k < 0 \\end{cases}",
+      "serializerOutput": "\\begin{cases}a_1 & \\text{if }k>0\\\\ a_2 & \\text{if }k<0\\end{cases}",
       "output": "\\begin{cases}a_1 & \\text{if }k>0\\\\ a_2 & \\text{if }k<0\\end{cases}",
       "normalizedInput": "\\begin{cases}a_1&\\text{if}k>0\\\\a_2&\\text{if}k<0\\end{cases}",
       "normalizedOutput": "\\begin{cases}a_1&\\text{if}k>0\\\\a_2&\\text{if}k<0\\end{cases}"
@@ -328,8 +355,9 @@
       "name": "gathered-two-lines",
       "strictPass": true,
       "proposedD28Pass": true,
-      "requiresMiddleCompatibilityCheck": false,
+      "fixupsApplied": [],
       "input": "\\begin{gathered} a + b = c \\\\ f = x + y \\end{gathered}",
+      "serializerOutput": "\\begin{gathered}a+b=c\\\\ f=x+y\\end{gathered}",
       "output": "\\begin{gathered}a+b=c\\\\ f=x+y\\end{gathered}",
       "normalizedInput": "\\begin{gathered}a+b=c\\\\f=x+y\\end{gathered}",
       "normalizedOutput": "\\begin{gathered}a+b=c\\\\f=x+y\\end{gathered}"
@@ -339,8 +367,9 @@
       "name": "matrix-with-dots",
       "strictPass": true,
       "proposedD28Pass": true,
-      "requiresMiddleCompatibilityCheck": false,
+      "fixupsApplied": [],
       "input": "\\begin{pmatrix} a_{1,1} & \\cdots & a_{1,n} \\\\ \\vdots & \\ddots & \\vdots \\\\ a_{n,1} & \\cdots & a_{n,n} \\end{pmatrix}",
+      "serializerOutput": "\\begin{pmatrix}a_{1,1} & \\cdots & a_{1,n}\\\\ \\vdots & \\ddots & \\vdots\\\\ a_{n,1} & \\cdots & a_{n,n}\\end{pmatrix}",
       "output": "\\begin{pmatrix}a_{1,1} & \\cdots & a_{1,n}\\\\ \\vdots & \\ddots & \\vdots\\\\ a_{n,1} & \\cdots & a_{n,n}\\end{pmatrix}",
       "normalizedInput": "\\begin{pmatrix}a_{1,1}&\\cdots&a_{1,n}\\\\\\vdots&\\ddots&\\vdots\\\\a_{n,1}&\\cdots&a_{n,n}\\end{pmatrix}",
       "normalizedOutput": "\\begin{pmatrix}a_{1,1}&\\cdots&a_{1,n}\\\\\\vdots&\\ddots&\\vdots\\\\a_{n,1}&\\cdots&a_{n,n}\\end{pmatrix}"
@@ -350,8 +379,9 @@
       "name": "matrix-containing-fractions",
       "strictPass": false,
       "proposedD28Pass": true,
-      "requiresMiddleCompatibilityCheck": false,
+      "fixupsApplied": [],
       "input": "\\begin{pmatrix} \\frac{1}{2} & 0 \\\\ 0 & \\frac{1}{3} \\end{pmatrix}",
+      "serializerOutput": "\\begin{pmatrix}\\frac12 & 0\\\\ 0 & \\frac13\\end{pmatrix}",
       "output": "\\begin{pmatrix}\\frac12 & 0\\\\ 0 & \\frac13\\end{pmatrix}",
       "normalizedInput": "\\begin{pmatrix}\\frac12&0\\\\0&\\frac13\\end{pmatrix}",
       "normalizedOutput": "\\begin{pmatrix}\\frac12&0\\\\0&\\frac13\\end{pmatrix}"
@@ -361,8 +391,9 @@
       "name": "left-right-fraction-power",
       "strictPass": true,
       "proposedD28Pass": true,
-      "requiresMiddleCompatibilityCheck": false,
+      "fixupsApplied": [],
       "input": "\\left( \\frac{a}{b} \\right)^{2}",
+      "serializerOutput": "\\left(\\frac{a}{b}\\right)^2",
       "output": "\\left(\\frac{a}{b}\\right)^2",
       "normalizedInput": "(\\fracab)^2",
       "normalizedOutput": "(\\fracab)^2"
@@ -372,9 +403,15 @@
       "name": "set-with-middle",
       "strictPass": false,
       "proposedD28Pass": true,
-      "requiresMiddleCompatibilityCheck": true,
+      "fixupsApplied": [
+        {
+          "id": "middle-delimiter-brace",
+          "description": "Rewrite MathLive nonstandard \\middle{|} output to standard \\middle|."
+        }
+      ],
       "input": "\\left\\{ \\frac{a}{a} \\middle| \\frac{H_2 O}{H_2} \\right\\}",
-      "output": "\\left\\{\\frac{a}{a}\\middle{|}\\frac{H_2O}{H_2}\\right\\}",
+      "serializerOutput": "\\left\\{\\frac{a}{a}\\middle{|}\\frac{H_2O}{H_2}\\right\\}",
+      "output": "\\left\\{\\frac{a}{a}\\middle|\\frac{H_2O}{H_2}\\right\\}",
       "normalizedInput": "\\{\\fracaa\\middle|\\frac{H_2O}{H_2}\\}",
       "normalizedOutput": "\\{\\fracaa\\middle|\\frac{H_2O}{H_2}\\}"
     },
@@ -383,8 +420,9 @@
       "name": "evaluated-bar",
       "strictPass": true,
       "proposedD28Pass": true,
-      "requiresMiddleCompatibilityCheck": false,
+      "fixupsApplied": [],
       "input": "\\left. \\frac{a}{b} \\right|_{x=0}^{x=1}",
+      "serializerOutput": "\\left.\\frac{a}{b}\\right|_{x=0}^{x=1}",
       "output": "\\left.\\frac{a}{b}\\right|_{x=0}^{x=1}",
       "normalizedInput": ".\\fracab|_{x=0}^{x=1}",
       "normalizedOutput": ".\\fracab|_{x=0}^{x=1}"
@@ -394,8 +432,9 @@
       "name": "three-deep-delimiters",
       "strictPass": true,
       "proposedD28Pass": true,
-      "requiresMiddleCompatibilityCheck": false,
+      "fixupsApplied": [],
       "input": "\\left[ 1 + \\left( \\frac{1}{1 + \\left( \\frac{x}{2} \\right)^2} \\right) \\right]^{-1}",
+      "serializerOutput": "\\left[1+\\left(\\frac{1}{1+\\left(\\frac{x}{2}\\right)^2}\\right)\\right]^{-1}",
       "output": "\\left[1+\\left(\\frac{1}{1+\\left(\\frac{x}{2}\\right)^2}\\right)\\right]^{-1}",
       "normalizedInput": "[1+(\\frac{1}{1+(\\fracx2)^2})]^{-1}",
       "normalizedOutput": "[1+(\\frac{1}{1+(\\fracx2)^2})]^{-1}"
@@ -405,9 +444,15 @@
       "name": "bra-ket-middle",
       "strictPass": false,
       "proposedD28Pass": true,
-      "requiresMiddleCompatibilityCheck": true,
+      "fixupsApplied": [
+        {
+          "id": "middle-delimiter-brace",
+          "description": "Rewrite MathLive nonstandard \\middle{|} output to standard \\middle|."
+        }
+      ],
       "input": "\\left\\langle \\psi \\middle| \\hat{H} \\middle| \\psi \\right\\rangle",
-      "output": "\\left\\langle\\psi\\middle{|}\\hat{H}\\middle{|}\\psi\\right\\rangle",
+      "serializerOutput": "\\left\\langle\\psi\\middle{|}\\hat{H}\\middle{|}\\psi\\right\\rangle",
+      "output": "\\left\\langle\\psi\\middle|\\hat{H}\\middle|\\psi\\right\\rangle",
       "normalizedInput": "\\langle\\psi\\middle|\\hat{H}\\middle|\\psi\\rangle",
       "normalizedOutput": "\\langle\\psi\\middle|\\hat{H}\\middle|\\psi\\rangle"
     },
@@ -416,8 +461,9 @@
       "name": "font-commands",
       "strictPass": true,
       "proposedD28Pass": true,
-      "requiresMiddleCompatibilityCheck": false,
+      "fixupsApplied": [],
       "input": "\\mathcal{L}, \\mathbf{a}, n \\subset \\left( \\mathbb{R} \\cap \\mathbb{N}^{*} \\right)",
+      "serializerOutput": "\\mathcal{L},\\mathbf{a},n\\subset\\left(\\mathbb{R}\\cap\\mathbb{N}^{*}\\right)",
       "output": "\\mathcal{L},\\mathbf{a},n\\subset\\left(\\mathbb{R}\\cap\\mathbb{N}^{*}\\right)",
       "normalizedInput": "\\mathcal{L},\\mathbf{a},n\\subset(\\mathbb{R}\\cap\\mathbb{N}^{*})",
       "normalizedOutput": "\\mathcal{L},\\mathbf{a},n\\subset(\\mathbb{R}\\cap\\mathbb{N}^{*})"
@@ -427,8 +473,9 @@
       "name": "compactness-text",
       "strictPass": true,
       "proposedD28Pass": true,
-      "requiresMiddleCompatibilityCheck": false,
+      "fixupsApplied": [],
       "input": "f \\in C^1(U), \\quad K \\subset X \\text{ compact}",
+      "serializerOutput": "f\\in C^1(U),\\quad K\\subset X\\text{ compact}",
       "output": "f\\in C^1(U),\\quad K\\subset X\\text{ compact}",
       "normalizedInput": "f\\inC^1(U),\\quadK\\subsetX\\text{compact}",
       "normalizedOutput": "f\\inC^1(U),\\quadK\\subsetX\\text{compact}"
@@ -438,8 +485,9 @@
       "name": "epsilon-delta",
       "strictPass": true,
       "proposedD28Pass": true,
-      "requiresMiddleCompatibilityCheck": false,
+      "fixupsApplied": [],
       "input": "\\forall \\varepsilon > 0\\;\\exists \\delta > 0 : d(x,y) < \\delta \\Rightarrow |f(x)-f(y)| < \\varepsilon",
+      "serializerOutput": "\\forall\\varepsilon>0\\;\\exists\\delta>0:d(x,y)<\\delta\\Rightarrow|f(x)-f(y)|<\\varepsilon",
       "output": "\\forall\\varepsilon>0\\;\\exists\\delta>0:d(x,y)<\\delta\\Rightarrow|f(x)-f(y)|<\\varepsilon",
       "normalizedInput": "\\forall\\varepsilon>0\\;\\exists\\delta>0:d(x,y)<\\delta\\Rightarrow|f(x)-f(y)|<\\varepsilon",
       "normalizedOutput": "\\forall\\varepsilon>0\\;\\exists\\delta>0:d(x,y)<\\delta\\Rightarrow|f(x)-f(y)|<\\varepsilon"
@@ -449,8 +497,9 @@
       "name": "operatorname-residue",
       "strictPass": true,
       "proposedD28Pass": false,
-      "requiresMiddleCompatibilityCheck": false,
+      "fixupsApplied": [],
       "input": "\\operatorname{Res}_{z=z_0} f(z)",
+      "serializerOutput": "\\operatorname{\\mathrm{Res}}_{z=z_0}f(z)",
       "output": "\\operatorname{\\mathrm{Res}}_{z=z_0}f(z)",
       "normalizedInput": "\\operatorname{Res}_{z=z_0}f(z)",
       "normalizedOutput": "\\operatorname{\\mathrm{Res}}_{z=z_0}f(z)"
@@ -460,8 +509,9 @@
       "name": "underbrace",
       "strictPass": true,
       "proposedD28Pass": true,
-      "requiresMiddleCompatibilityCheck": false,
+      "fixupsApplied": [],
       "input": "\\underbrace{x + x + \\cdots + x}_{n\\text{ times}}",
+      "serializerOutput": "\\underbrace{x+x+\\cdots+x}_{n\\text{ times}}",
       "output": "\\underbrace{x+x+\\cdots+x}_{n\\text{ times}}",
       "normalizedInput": "\\underbrace{x+x+\\cdots+x}_{n\\text{times}}",
       "normalizedOutput": "\\underbrace{x+x+\\cdots+x}_{n\\text{times}}"
@@ -471,8 +521,9 @@
       "name": "overset-bang",
       "strictPass": true,
       "proposedD28Pass": true,
-      "requiresMiddleCompatibilityCheck": false,
+      "fixupsApplied": [],
       "input": "\\overset{!}{=}",
+      "serializerOutput": "\\overset{!}{=}",
       "output": "\\overset{!}{=}",
       "normalizedInput": "\\overset{!}{=}",
       "normalizedOutput": "\\overset{!}{=}"
@@ -482,8 +533,9 @@
       "name": "continued-fraction-slash",
       "strictPass": true,
       "proposedD28Pass": false,
-      "requiresMiddleCompatibilityCheck": false,
+      "fixupsApplied": [],
       "input": "e^{-2\\pi} \\big/ \\Bigl(1+\\frac{e^{-4\\pi}}{1+\\cdots}\\Bigr)",
+      "serializerOutput": "e^{-2\\pi}\\big.\\Bigl(1+\\frac{e^{-4\\pi}}{1+\\cdots}\\Bigr)",
       "output": "e^{-2\\pi}\\big.\\Bigl(1+\\frac{e^{-4\\pi}}{1+\\cdots}\\Bigr)",
       "normalizedInput": "e^{-2\\pi}\\big/\\Bigl(1+\\frac{e^{-4\\pi}}{1+\\cdots}\\Bigr)",
       "normalizedOutput": "e^{-2\\pi}\\big.\\Bigl(1+\\frac{e^{-4\\pi}}{1+\\cdots}\\Bigr)"

@@ -2,48 +2,55 @@
 
 Date: 2026-08-03
 
-Status correction after checkpoint review: **the original pass claim is invalidated.** See `docs/reports/phase-0-review.md` and `docs/reports/phase-0-remediation.md`.
+Decision: **pass under ratified D28 — use `MathLiveEngine` for v1.**
 
-Original decision recorded here: pass — use `MathLiveEngine` for v1. This decision is now provisional pending D28 ratification or an alternate engine route.
+Claude's Checkpoint 1 review invalidated the first report because the harness measured MathLive's verbatim `getValue("latex")` cache after `setValue()`. This report replaces that record. The canonical Phase 0 result now uses true serialization from `getValue("latex-expanded")`, applies explicit sync-layer fixups, and classifies output under ratified D28.
 
-Spike A used the pinned `mathlive@0.110.0` dependency. The original automated round-trip harness loaded all 40 battery expressions into a real browser `<math-field>`, called `setValue(latex)`, waited for MathLive to settle, then read `getValue("latex")`.
-
-Checkpoint review found that this measured MathLive's verbatim input cache, not true tree serialization. This report is retained as historical evidence of the mistake; it is not a valid checkpoint pass report.
-
-Round-trip command:
+# Commands
 
 ```bash
 npm run spike:mathlive
+npm run spike:natural
+npm run spike:d28-analysis
+npm run test:all
 ```
 
-Output:
+# Canonical Round-Trip Result
+
+`spikes/mathlive-fidelity/results.json` is the canonical result file.
 
 ```text
 Wrote spikes/mathlive-fidelity/results.json
 {
+  "strictCountedPasses": 23,
+  "strictCountedFailures": 13,
   "countedPasses": 36,
   "countedFailures": 0,
   "mustPassAligned": true,
   "mustPassCases": true,
+  "fixupItems": [
+    30,
+    33
+  ],
   "decision": "pass"
 }
 ```
 
-Result details:
+Interpretation:
 
-- Counted items 1-36: 36 pass, 0 fail.
-- Must-pass `aligned` item 22: pass.
-- Must-pass `cases` item 25: pass.
-- Known-hostile items 37-40: preserved without destructive diff.
-- Every item came back byte-identical in this installed MathLive build; no cosmetic whitelist was needed.
+- Original strict D16: 23/36 counted passes, 13 counted failures.
+- Ratified D28: 36/36 counted passes.
+- Required multiline items passed: `aligned` #22 and `cases` #25.
+- Items 30 and 33 emitted MathLive's nonstandard `\middle{|}` form and were counted only after the explicit `middle-delimiter-brace` fixup rewrote that output to standard `\middle|`.
+- Cached `getValue("latex")` is recorded per item only as BS-37 evidence; it is not used for serializer pass/fail.
 
-Natural-edit probe command:
+# Failure List Under Original Strict D16
 
-```bash
-npm run spike:natural
-```
+The 13 strict failures were items 2, 5, 7, 8, 11, 12, 15, 20, 21, 23, 28, 30, and 33. They are whole-equation serializer normalizations: spacing removal, brace normalization, compact `\tfrac` forms, prime normalization, `\mathrm` argument/subscript restructuring, matrix spacing normalization, and the `\middle{|}` issue fixed above.
 
-Output:
+# Natural-Edit Result
+
+`spikes/mathlive-fidelity/natural-results.json` records the amended Phase 0 natural-edit evidence.
 
 ```text
 Wrote spikes/mathlive-fidelity/natural-results.json
@@ -53,21 +60,42 @@ Wrote spikes/mathlive-fidelity/natural-results.json
 }
 ```
 
-The natural-edit probe exercised sampled items 9, 12, 20, 22, 25, 28, and 29. For each item it focused the mathfield, moved from the mathfield start using MathLive movement commands, inserted a token, and verified serialization changed while remaining nonempty. For the multiline must-pass items 22 and 25, it also ran `addRowAfter` and verified serialization changed. This is automated evidence of structural navigation/editability, not a replacement for Sam's later hands-on Phase 2/3 UX checks.
+The sampled items were 9, 12, 20, 22, 25, 28, and 29. The automated substitute criterion is documented in `docs/decisions/AGENT-DECIDED-20260803-natural-edit-automation.md`: insert exactly one token, remove it, require D28-equivalence to the original, and for multiline must-pass items add a placeholder row.
 
-Artifacts committed with this report:
+# D28 Analysis
 
-- `spikes/mathlive-fidelity/battery.json`
-- `spikes/mathlive-fidelity/results.json`
-- `spikes/mathlive-fidelity/natural-results.json`
-- `spikes/mathlive-fidelity/index.html`
-- `spikes/mathlive-fidelity/browser-entry.ts`
-- `spikes/mathlive-fidelity/run-roundtrip.mjs`
-- `spikes/mathlive-fidelity/run-natural-checks.mjs`
-- `spikes/mathlive-fidelity/manual-checklist.md`
-- `tests/fixtures/battery/*.tex`
-- `tests/fixtures/battery/*.expected.tex`
+`spikes/mathlive-fidelity/d28-analysis.json` cross-checks the canonical result.
 
-AGENT-DECIDED notes made during this phase: none.
+```text
+Wrote spikes/mathlive-fidelity/d28-analysis.json
+{
+  "strictCountedPasses": 23,
+  "proposedD28CountedPasses": 36,
+  "proposedD28CountedFailures": 0,
+  "mustPassAligned": true,
+  "mustPassCases": true,
+  "fixupItems": [
+    30,
+    33
+  ]
+}
+```
 
-Next: proceed to Phase 1 with `MathLiveEngine`.
+# Test Output
+
+```text
+npm run test:all
+
+lint: passed
+unit: 2 files passed, 7 tests passed
+engine: 1 file passed, 4 tests passed
+```
+
+# AGENT-DECIDED Notes
+
+- `docs/decisions/AGENT-DECIDED-20260803-invalidate-cache-run.md`
+- `docs/decisions/AGENT-DECIDED-20260803-natural-edit-automation.md`
+
+# Next
+
+Phase 0 is complete under ratified D28. Proceed to Phase 1 with `MathLiveEngine`.
