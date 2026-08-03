@@ -77,14 +77,14 @@ try {
       }
       await page.keyboard.type("z");
       await page.waitForTimeout(50);
-      afterInsertion = await page.evaluate(() => window.spikeMathlive.getValue());
+      afterInsertion = await page.evaluate(() => window.spikeMathlive.getValue("latex-expanded"));
     }
 
     let rowCommandResult = null;
     let afterRowCommand = null;
     if (item.id === 22 || item.id === 25) {
       rowCommandResult = await page.evaluate(() => window.spikeMathlive.execute("addRowAfter"));
-      afterRowCommand = await page.evaluate(() => window.spikeMathlive.getValue());
+      afterRowCommand = await page.evaluate(() => window.spikeMathlive.getValue("latex-expanded"));
     }
 
     const changed = afterInsertion !== item.latex;
@@ -105,7 +105,7 @@ try {
       input: item.latex,
       afterInsertion,
       afterRowCommand,
-      notes: "Automated probe: move from mathfield start by arrow-equivalent commands, type z, retrying with additional right moves if the first insertion point rejects text; for multiline must-pass items run addRowAfter.",
+      notes: "Automated probe: move from mathfield start by arrow-equivalent commands, type z, retrying with additional right moves if the first insertion point rejects text; for multiline must-pass items run addRowAfter; serialization measured with getValue('latex-expanded').",
     });
   }
 

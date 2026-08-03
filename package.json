@@ -11,7 +11,8 @@
     "test:all": "npm run lint && npm run test:unit && npm run test:engine",
     "lint": "eslint .",
     "spike:mathlive": "node spikes/mathlive-fidelity/run-roundtrip.mjs",
-    "spike:natural": "node spikes/mathlive-fidelity/run-natural-checks.mjs"
+    "spike:natural": "node spikes/mathlive-fidelity/run-natural-checks.mjs",
+    "spike:d28-analysis": "node spikes/mathlive-fidelity/analyze-d28.mjs"
   },
   "keywords": [
     "obsidian",

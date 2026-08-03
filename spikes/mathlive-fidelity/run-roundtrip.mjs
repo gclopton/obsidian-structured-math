@@ -82,13 +82,16 @@ try {
       window.spikeMathlive.setValue(latex);
     }, item.latex);
     await page.waitForTimeout(50);
-    const output = await page.evaluate(() => window.spikeMathlive.getValue());
+    const cachedOutput = await page.evaluate(() => window.spikeMathlive.getValue("latex"));
+    const output = await page.evaluate(() => window.spikeMathlive.getValue("latex-expanded"));
     const result = classify(item.latex, output, item.tolerance);
     items.push({
       id: item.id,
       name: item.name,
       input: item.latex,
+      cachedOutput,
       output,
+      outputFormat: "latex-expanded",
       tolerance: item.tolerance,
       mustPass: item.mustPass,
       diffClass: result.diffClass,
@@ -115,6 +118,7 @@ try {
   const results = {
     mathliveVersion: "0.110.0",
     date: "2026-08-03",
+    method: "setValue(input) then getValue('latex-expanded'); cached getValue('latex') retained only for comparison",
     items,
     summary: {
       countedPasses,

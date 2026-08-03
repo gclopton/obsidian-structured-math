@@ -12,6 +12,7 @@ const mf = field as HTMLElement & {
   getValue(format?: string): string;
   executeCommand(command: string | [string, ...unknown[]]): boolean;
   insert(value: string, options?: unknown): void;
+  errors: readonly unknown[];
   value: string;
   mathVirtualKeyboardPolicy: string;
   smartFence: boolean;
@@ -61,8 +62,8 @@ Object.assign(window, {
       mf.setValue(value);
       syncOut();
     },
-    getValue(): string {
-      return mf.getValue("latex");
+    getValue(format = "latex"): string {
+      return mf.getValue(format);
     },
     insertTemplate(value: string): void {
       mf.insert(value, { selectionMode: "placeholder" });
@@ -75,6 +76,9 @@ Object.assign(window, {
     },
     focus(): void {
       mf.focus();
+    },
+    errors(): readonly unknown[] {
+      return mf.errors;
     },
   },
 });

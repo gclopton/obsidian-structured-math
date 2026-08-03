@@ -2,9 +2,13 @@
 
 Date: 2026-08-03
 
-Decision: **pass — use `MathLiveEngine` for v1.**
+Status correction after checkpoint review: **the original pass claim is invalidated.** See `docs/reports/phase-0-review.md` and `docs/reports/phase-0-remediation.md`.
 
-Spike A used the pinned `mathlive@0.110.0` dependency. The automated round-trip harness loaded all 40 battery expressions into a real browser `<math-field>`, called `setValue(latex)`, waited for MathLive to settle, then read `getValue("latex")`.
+Original decision recorded here: pass — use `MathLiveEngine` for v1. This decision is now provisional pending D28 ratification or an alternate engine route.
+
+Spike A used the pinned `mathlive@0.110.0` dependency. The original automated round-trip harness loaded all 40 battery expressions into a real browser `<math-field>`, called `setValue(latex)`, waited for MathLive to settle, then read `getValue("latex")`.
+
+Checkpoint review found that this measured MathLive's verbatim input cache, not true tree serialization. This report is retained as historical evidence of the mistake; it is not a valid checkpoint pass report.
 
 Round-trip command:
 
