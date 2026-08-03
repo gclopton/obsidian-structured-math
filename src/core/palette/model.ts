@@ -16,6 +16,10 @@ export function appendQuery(model: PaletteModel, char: string): PaletteModel {
   return { ...model, query: `${model.query}${char}`, selectedIndex: 0 };
 }
 
+export function setQuery(model: PaletteModel, query: string): PaletteModel {
+  return { ...model, query, selectedIndex: 0 };
+}
+
 export function backspaceQuery(model: PaletteModel): PaletteModel {
   return { ...model, query: model.query.slice(0, -1), selectedIndex: 0 };
 }

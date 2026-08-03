@@ -6,6 +6,7 @@ import {
   initialPaletteModel,
   moveSelection,
   paletteResults,
+  setQuery,
   type PaletteModel,
 } from "./model";
 
@@ -42,11 +43,16 @@ export class PaletteComponent {
 
     this.element.append(this.input, this.list, this.footer);
     this.input.addEventListener("keydown", (event) => this.handleKeydown(event));
+    this.input.addEventListener("input", () => this.handleInput());
     this.render();
   }
 
   focus(): void {
+    for (const field of Array.from(document.querySelectorAll<HTMLElement>("math-field"))) {
+      field.blur();
+    }
     this.input.focus();
+    window.setTimeout(() => this.input.focus(), 0);
   }
 
   results(): MathTemplate[] {
@@ -95,6 +101,12 @@ export class PaletteComponent {
       this.model = appendQuery(this.model, event.key);
       this.render();
     }
+  }
+
+  private handleInput(): void {
+    if (this.input.value === this.model.query) return;
+    this.model = setQuery(this.model, this.input.value);
+    this.render();
   }
 
   private render(): void {

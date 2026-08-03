@@ -1,0 +1,17 @@
+--- docs/reports/phase-2-demo/before.md	2026-08-03 16:40:50
++++ docs/reports/phase-2-demo/after.md	2026-08-03 16:44:04
+@@ -1,6 +1,7 @@
+ Phase 2 checkpoint demo
+ 
+ Inline:
++$v=\frac{s}{t}$ continuing prose
+ 
+ No-edit activation: $x+1$
+ 
+@@ -9,3 +10,6 @@
+ Undo: $x+1$
+ 
+ Display:
++$$
++E=mc^2
++$$

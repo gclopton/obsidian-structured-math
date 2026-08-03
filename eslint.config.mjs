@@ -26,6 +26,22 @@ export default tseslint.config(
     },
   },
   {
+    files: ["scripts/run-phase2-demo.cjs"],
+    languageOptions: {
+      globals: {
+        app: "readonly",
+        console: "readonly",
+        document: "readonly",
+        InputEvent: "readonly",
+        process: "readonly",
+        require: "readonly",
+      },
+    },
+    rules: {
+      "@typescript-eslint/no-require-imports": "off",
+    },
+  },
+  {
     files: ["src/**/*.ts", "tests/**/*.ts"],
     languageOptions: {
       parserOptions: {

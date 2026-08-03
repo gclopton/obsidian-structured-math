@@ -1,0 +1,37 @@
+2026-08-03 Phase 2 D24 evidence transcript
+
+Scripted CDP run against /Users/gradyclopton/ObsidianVaults/latex:
+1. Reset Phase 2 Checkpoint 2 Demo.md to the before.md fixture.
+2. Opened the note in Obsidian Live Preview.
+3. Placed the cursor after "Inline:".
+4. Typed "$"; an in-document MathLive field appeared at the cursor.
+5. Set the active MathLive value to "v = \\frac{s}{t}" and captured 03-inline-built.png.
+6. Pressed ArrowRight and typed " continuing prose"; captured 04-inline-committed-prose.png.
+7. Captured before.md and after.md; file-diff.patch shows only insertion of "$v=\\frac{s}{t}$ continuing prose".
+8. Activated the existing "$x+1$" by ArrowRight from its left boundary; captured 05-no-edit-active.png.
+9. The scripted run then timed out on the next existing-equation activation because Obsidian/CDP focus did not return to CodeMirror consistently after Escape.
+
+Desktop-control fallback against the same vault:
+1. Reset the same note to the fixture.
+2. Placed the cursor after "Inline:".
+3. Typed a newline and "$"; captured 01-vault-inline-empty.jpeg showing the active in-document math field.
+4. Typed "x+2" through the keyboard into the active field; captured 02-vault-inline-typed.jpeg.
+5. Pressed Right and typed " continuing prose"; captured 03-vault-inline-prose.jpeg.
+
+Automated browser acceptance coverage:
+1. "$" creates inline math, editing produces clean "$v=\\frac{s}{t}$", ArrowRight exits, and prose continues on the same line.
+2. Activation/deactivation without edits is byte-neutral.
+3. Escape reverts to activation-time source.
+4. Display math inserts and edits in place, serializing to "$$\\nE=mc^2\\n$$".
+5. Undo after commit restores the previous equation source in one history operation.
+
+Display-only CDP run against the same vault:
+1. Reopened Phase 2 Checkpoint 2 Demo.md.
+2. Placed the cursor on the blank line after "Display:".
+3. Ran the plugin command "structured-math:insert-display-math-container".
+4. Set the active display MathLive value to "E=mc^2" and captured 06-display-active.png.
+5. Pressed ArrowRight to commit; captured 07-display-committed.png.
+6. after.md and file-diff.patch include the stored clean block:
+   $$
+   E=mc^2
+   $$

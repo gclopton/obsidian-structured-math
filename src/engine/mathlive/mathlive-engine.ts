@@ -31,6 +31,7 @@ export class MathLiveEngine implements EditorEngine {
   private changeCallbacks = new Set<(latex: string) => void>();
   private boundaryCallbacks = new Set<(dir: Direction) => void>();
   private paletteCallbacks = new Set<(anchor: DOMRect) => void>();
+  private cancelCallbacks = new Set<() => void>();
   private suppressChange = false;
 
   mount(host: HTMLElement, opts: EngineMountOptions): void {
@@ -129,6 +130,11 @@ export class MathLiveEngine implements EditorEngine {
     return () => this.paletteCallbacks.delete(cb);
   }
 
+  onCancel(cb: () => void): () => void {
+    this.cancelCallbacks.add(cb);
+    return () => this.cancelCallbacks.delete(cb);
+  }
+
   private requireField(): MathfieldLike {
     if (!this.field) throw new Error("MathLiveEngine is not mounted.");
     return this.field;
@@ -137,9 +143,28 @@ export class MathLiveEngine implements EditorEngine {
   private handleKeydown(event: KeyboardEvent): void {
     if (!this.field) return;
 
+    if (event.key === "Escape") {
+      event.preventDefault();
+      for (const callback of this.cancelCallbacks) callback();
+      return;
+    }
+
     if (event.key === "\\") {
       event.preventDefault();
       for (const callback of this.paletteCallbacks) callback(this.field.getBoundingClientRect());
+      return;
+    }
+
+    if (event.key === "Tab") {
+      event.preventDefault();
+      const before = this.field.position;
+      const moved = event.shiftKey
+        ? this.field.executeCommand("moveToPreviousPlaceholder")
+        : this.field.executeCommand("moveToNextPlaceholder");
+      if (!moved || this.field.position === before) {
+        const direction = event.shiftKey ? "left" : "right";
+        for (const callback of this.boundaryCallbacks) callback(direction);
+      }
       return;
     }
 

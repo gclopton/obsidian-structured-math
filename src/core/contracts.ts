@@ -27,6 +27,7 @@ export interface EditorEngine {
   onChange(cb: (latex: string) => void): () => void;
   onBoundaryExit(cb: (dir: "left" | "right" | "up" | "down") => void): () => void;
   onPaletteRequest(cb: (anchor: DOMRect) => void): () => void;
+  onCancel(cb: () => void): () => void;
 }
 
 export interface MathTemplate {

@@ -4,6 +4,34 @@
   max-width: 100%;
 }
 
+.structured-math-active-widget {
+  display: inline-flex;
+  align-items: baseline;
+  max-width: 100%;
+  vertical-align: baseline;
+}
+
+.structured-math-active-widget[data-display="true"] {
+  display: block;
+  margin: 0.6em 0;
+}
+
+.structured-math-active-widget math-field {
+  max-width: 100%;
+  min-width: 1.5em;
+  border: 1px solid var(--interactive-accent, #2563eb);
+  border-radius: 2px;
+  background: var(--background-primary, #ffffff);
+  color: var(--text-normal, #111827);
+  font-size: var(--font-text-size, 16px);
+}
+
+.structured-math-active-widget[data-display="true"] math-field {
+  display: block;
+  width: 100%;
+  min-height: 2.25em;
+}
+
 .structured-math-active[data-display="true"] {
   display: block;
   margin: 0.75em 0;
