@@ -1,0 +1,37 @@
+{
+  "name": "obsidian-structured-math",
+  "version": "0.0.0",
+  "description": "Structured, in-document math editing for Obsidian.",
+  "main": "main.js",
+  "scripts": {
+    "dev": "node scripts/dev-watch.mjs",
+    "build": "node esbuild.config.mjs production",
+    "test:unit": "vitest run tests/unit",
+    "test:engine": "vitest run --config vitest.engine.config.ts tests/engine",
+    "test:all": "npm run lint && npm run test:unit && npm run test:engine",
+    "lint": "eslint .",
+    "spike:mathlive": "node spikes/mathlive-fidelity/run-roundtrip.mjs",
+    "spike:natural": "node spikes/mathlive-fidelity/run-natural-checks.mjs"
+  },
+  "keywords": [
+    "obsidian",
+    "latex",
+    "mathlive"
+  ],
+  "author": "Grady Clopton",
+  "license": "MIT",
+  "devDependencies": {
+    "@eslint/js": "^9.32.0",
+    "@playwright/test": "^1.54.2",
+    "@types/node": "^24.1.0",
+    "esbuild": "^0.25.8",
+    "eslint": "^9.32.0",
+    "obsidian": "^1.8.7",
+    "typescript": "^5.9.2",
+    "typescript-eslint": "^8.39.0",
+    "vitest": "^3.2.4"
+  },
+  "dependencies": {
+    "mathlive": "0.110.0"
+  }
+}

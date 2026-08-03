@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>MathLive Fidelity Spike</title>
+    <style>
+      body {
+        font-family: system-ui, sans-serif;
+        margin: 24px;
+      }
+
+      math-field {
+        display: block;
+        min-height: 56px;
+        padding: 8px;
+        border: 1px solid #9ca3af;
+        font-size: 24px;
+      }
+
+      textarea {
+        box-sizing: border-box;
+        width: 100%;
+        min-height: 120px;
+        margin-top: 12px;
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      }
+
+      button {
+        margin: 8px 8px 0 0;
+      }
+    </style>
+  </head>
+  <body>
+    <math-field id="field"></math-field>
+    <textarea id="latex" aria-label="LaTeX"></textarea>
+    <div>
+      <button id="set">setValue</button>
+      <button id="get">getValue</button>
+      <button id="frac">insert fraction</button>
+      <button id="next">next placeholder</button>
+      <button id="prev">previous placeholder</button>
+      <button id="clear">clear</button>
+    </div>
+    <script type="module" src="/browser-entry.js"></script>
+  </body>
+</html>

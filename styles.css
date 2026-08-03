@@ -1,0 +1,10 @@
+.structured-math-active {
+  display: inline-flex;
+  vertical-align: baseline;
+  max-width: 100%;
+}
+
+.structured-math-active[data-display="true"] {
+  display: block;
+  margin: 0.75em 0;
+}
