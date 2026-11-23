@@ -8,13 +8,18 @@ export default class StructuredMathPlugin extends Plugin {
   settings: StructuredMathSettings = DEFAULT_SETTINGS;
 
   async getReleaseReadiness(): Promise<ReleaseReadiness> {
-    const drafts = await Promise.all(structuredMathDrafts().map(async (draft) => {
-      // A typed equation is safe to reload once the field's value is in the note and the note is saved.
-      let saved = false;
-      if (draft.typed && draft.written && draft.path !== null) {
-        saved = await this.app.vault.adapter.read(draft.path).then((disk) => disk === draft.buffer, () => false);
-      }
-      return { typed: draft.typed, composing: draft.composing, written: draft.written, saved };
+    const savedNotes = new Map<string, string>();
+    const paths = new Set<string>();
+    for (const draft of structuredMathDrafts()) {
+      if (draft.typed && draft.written && draft.path !== null) paths.add(draft.path);
+    }
+    await Promise.all(Array.from(paths, async (path) => {
+      try { savedNotes.set(path, await this.app.vault.adapter.read(path)); }
+      catch { /* An unreadable note cannot establish that its equation is saved. */ }
+    }));
+    // Edits and IME composition can start while the note reads are pending.
+    const drafts = structuredMathDrafts().map((draft) => ({
+      ...draft, saved: draft.path !== null && savedNotes.get(draft.path) === draft.buffer,
     }));
     return structuredMathReadiness({ drafts });
   }

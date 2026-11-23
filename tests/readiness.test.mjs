@@ -27,6 +27,7 @@ registerHooks({
         format: 'module',
         source: `
           export class Plugin { constructor(app){ this.app = app; } async loadData(){ return {}; } }
+          export const editorInfoField = Symbol("editorInfoField");
           export class WidgetType {}
           export const EditorSelection = { cursor: (pos) => ({ anchor: pos }) };
           export const createStructuredMathExtension = () => [];
@@ -37,8 +38,8 @@ registerHooks({
           export const displayReplacementForContext = () => ({ source: '$$\\n\\n$$', sourceFrom: 0, sourceTo: 6, contentFrom: 3 });
           export const mathSource = () => '$x$';
           export class MathLiveEngine {
-            mount() {}
-            getLatex() { return ''; }
+            mount(wrapper, config) { this.wrapper = wrapper; wrapper.mathLatex = config.initialLatex; }
+            getLatex() { return this.wrapper.mathLatex; }
             onChange() { return () => {}; }
             onBoundaryExit() { return () => {}; }
             onCancel() { return () => {}; }
@@ -60,6 +61,7 @@ function createFakeDomEnvironment() {
   const mounted = new Set();
   const makeElement = (tag) => {
     const classes = new Set();
+    const listeners = new Map();
     const element = {
       tagName: tag.toUpperCase(),
       dataset: {},
@@ -68,7 +70,11 @@ function createFakeDomEnvironment() {
         add(name) { classes.add(name); },
         contains(name) { return classes.has(name); },
       },
-      addEventListener() {},
+      addEventListener(name, fn) {
+        if (!listeners.has(name)) listeners.set(name, []);
+        listeners.get(name).push(fn);
+      },
+      emit(name) { for (const fn of listeners.get(name) ?? []) fn({ type: name }); },
       querySelector() { return null; },
       detach() {
         element.isConnected = false;
@@ -109,54 +115,52 @@ test('structured-math recipe is schema 1, installed-only, maps dist/main.js, and
   assert.ok(recipe.protectedPaths.includes('plugins/structured-math/data.json'));
 });
 
-test('actual StructuredMathPlugin.getReleaseReadiness follows StructuredMathWidget toDOM/destroy and .structured-math-active-widget', async () => {
-  const { fakeDocument, fakeWindow, mounted } = createFakeDomEnvironment();
-  const prevDocument = globalThis.document;
-  const prevWindow = globalThis.window;
+test('an untouched or saved equation can reload while a composing or unwritten edit holds', async (t) => {
+  const { fakeDocument, fakeWindow } = createFakeDomEnvironment();
+  const prevDocument = globalThis.document, prevWindow = globalThis.window;
   globalThis.document = fakeDocument;
   globalThis.window = fakeWindow;
+  t.after(() => { globalThis.document = prevDocument; globalThis.window = prevWindow; });
 
-  try {
-    const plugin = new StructuredMathPlugin({});
-    assert.deepEqual(await plugin.getReleaseReadiness(), { canReload: true });
+  let disk = '$x$', buffer = disk;
+  const adapter = { read: async () => disk };
+  const plugin = new StructuredMathPlugin({ vault: { adapter } });
+  const canReload = async () => (await plugin.getReleaseReadiness()).canReload;
+  assert.equal(await canReload(), true);
+  const widget = new StructuredMathWidget({
+    sourceFrom: 0, sourceTo: 3, contentFrom: 1, contentTo: 2, inline: true,
+    latex: 'x', initialLatex: 'x', dirty: false, focusSide: 'preserve', sessionId: 1,
+  });
+  const view = { state: {
+    doc: { get length() { return buffer.length; }, sliceString: (a,b) => buffer.slice(a,b), toString: () => buffer },
+    field: () => ({ file: { path: 'note.md' } }),
+  }, dispatch() {}, focus() {} };
+  const dom = widget.toDOM(view);
+  t.after(() => widget.destroy(dom));
+  assert.equal(await canReload(), true);
+  dom.emit('compositionstart');
+  assert.equal(await canReload(), false);
+  dom.emit('compositionend');
+  dom.emit('beforeinput');
+  dom.mathLatex = 'y';
+  assert.equal(await canReload(), false);
+  buffer = '$y$';
+  assert.equal(await canReload(), false);
+  disk = buffer;
+  assert.equal(await canReload(), true);
 
-    const widget = new StructuredMathWidget({
-      sourceFrom: 0,
-      sourceTo: 3,
-      contentFrom: 1,
-      contentTo: 2,
-      inline: true,
-      latex: 'x',
-      initialLatex: 'x',
-      dirty: false,
-      focusSide: 'preserve',
-      sessionId: 1,
-    });
-    const fakeView = {
-      state: { doc: { sliceString: () => '$x$' } },
-      dispatch() {},
-      focus() {},
-    };
-
-    const dom = widget.toDOM(fakeView);
-    assert.equal(dom.classList.contains('structured-math-active-widget'), true);
-    const held = await plugin.getReleaseReadiness();
-    assert.equal(held.canReload, false);
-    assert.match(held.reason, /equation is being edited/i);
-
-    widget.destroy(dom);
-    dom.detach();
-    assert.deepEqual(await plugin.getReleaseReadiness(), { canReload: true });
-
-    // Also verify DOM-only detection of .structured-math-active-widget
-    const externalWidget = fakeDocument.createElement('span');
-    externalWidget.classList.add('structured-math-active-widget');
-    assert.equal((await plugin.getReleaseReadiness()).canReload, false);
-    externalWidget.detach();
-    mounted.clear();
-    assert.deepEqual(await plugin.getReleaseReadiness(), { canReload: true });
-  } finally {
-    globalThis.document = prevDocument;
-    globalThis.window = prevWindow;
-  }
+  // The user types again while the adapter is reading the previously saved equation.
+  let finishRead;
+  adapter.read = () => new Promise(resolve => { finishRead = resolve; });
+  const reading = canReload();
+  dom.emit('beforeinput');
+  dom.mathLatex = 'z';
+  buffer = '$z$';
+  finishRead(disk);
+  assert.equal(await reading, false, 'an old read must not certify the new edit');
+  disk = buffer;
+  adapter.read = async () => disk;
+  assert.equal(await canReload(), true);
+  widget.destroy(dom);
+  assert.equal(await canReload(), true);
 });
