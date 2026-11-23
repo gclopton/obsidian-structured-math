@@ -1,0 +1,17 @@
+{
+  "schema": 1,
+  "pluginId": "structured-math",
+  "sourceCommit": "3d41ce7b38ccbb5e7ff99348c51f4293815fc8c8",
+  "files": {
+    "main.js": "7a473ce136d77143b44aa8cd61cf916eae221cd5ce77c3be1b2ab6389d17efa8",
+    "manifest.json": "c7966ba371d152244f50c84cb49861cdce8f97ce0d4c32f4673f7922780fe1e3",
+    "styles.css": "290061475b880a47c3329a8f2af4afe8ac87587666f524e4995c14672d50353c"
+  },
+  "receiverCompatibility": {
+    "runtimeOnlyFrom": [
+      "0.0.0"
+    ],
+    "runtimeOnlyFromReceipts": [],
+    "requiredMigrations": []
+  }
+}
