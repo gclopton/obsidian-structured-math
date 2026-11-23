@@ -148,6 +148,19 @@ test('an untouched or saved equation can reload while a composing or unwritten e
   assert.equal(await canReload(), false);
   disk = buffer;
   assert.equal(await canReload(), true);
+
+  // The user types again while the adapter is reading the previously saved equation.
+  let finishRead;
+  adapter.read = () => new Promise(resolve => { finishRead = resolve; });
+  const reading = canReload();
+  dom.emit('beforeinput');
+  dom.mathLatex = 'z';
+  buffer = '$z$';
+  finishRead(disk);
+  assert.equal(await reading, false, 'an old read must not certify the new edit');
+  disk = buffer;
+  adapter.read = async () => disk;
+  assert.equal(await canReload(), true);
   widget.destroy(dom);
   assert.equal(await canReload(), true);
 });
