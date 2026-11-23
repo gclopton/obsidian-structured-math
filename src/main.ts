@@ -30,7 +30,7 @@ export default class StructuredMathPlugin extends Plugin {
 
     this.addCommand({
       id: "insert-display-math-container",
-      name: "Insert display equation",
+      name: "Insert display math container",
       editorCallback: (editor) => {
         editor.replaceSelection(displayMathSource());
         const cursor = editor.getCursor();
