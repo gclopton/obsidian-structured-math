@@ -18,7 +18,8 @@ describe("core catalog", () => {
 describe("Formula Library converter", () => {
   it("converts pinned reference files into MathTemplate records", () => {
     const file = JSON.parse(
-      readFileSync("/Users/gradyclopton/Projects/reference/obsidian-formula-library/formulas/functions.json", "utf8")
+      // Exact Formula Library input from upstream ed25a986bca72c742dd1d2dc3777b607f0f5c79a.
+      readFileSync(new URL("../fixtures/formula-library/functions.json", import.meta.url), "utf8")
     );
 
     const converted = convertFormulaLibraryFile(file);
