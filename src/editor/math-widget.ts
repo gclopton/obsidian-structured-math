@@ -15,6 +15,18 @@ interface WidgetDomState {
 }
 
 const widgetState = new WeakMap<HTMLElement, WidgetDomState>();
+const activeWidgetElements = new Set<HTMLElement>();
+
+export function countActiveStructuredMathWidgets(
+  root?: { querySelectorAll?: (selector: string) => ArrayLike<unknown> },
+): number {
+  const domSource = root ?? (typeof document !== "undefined" ? document : undefined);
+  const domCount =
+    typeof domSource?.querySelectorAll === "function"
+      ? domSource.querySelectorAll(".structured-math-active-widget").length
+      : 0;
+  return Math.max(activeWidgetElements.size, domCount);
+}
 
 function codeMirrorInputState(view: EditorView): { composing: number } | undefined {
   return (view as unknown as { inputState?: { composing: number } }).inputState;
@@ -232,6 +244,7 @@ export class StructuredMathWidget extends WidgetType {
       if (this.active.focusSide === "end") mathfield.position = mathfield.lastOffset;
     }, 0);
 
+    activeWidgetElements.add(wrapper);
     widgetState.set(wrapper, { engine, cleanup });
     return wrapper;
   }
@@ -242,6 +255,7 @@ export class StructuredMathWidget extends WidgetType {
   }
 
   destroy(dom: HTMLElement): void {
+    activeWidgetElements.delete(dom);
     const state = widgetState.get(dom);
     if (!state) return;
     for (const dispose of state.cleanup) dispose();

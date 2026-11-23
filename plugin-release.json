@@ -1,0 +1,51 @@
+{
+  "schema": 1,
+  "pluginId": "structured-math",
+  "allowProtected": "structured-math",
+  "roster": "~/Projects/obsidian-vault-development/inventories/structured-math.json",
+  "scopePolicy": "installed-only",
+  "committedBuild": true,
+  "buildInputs": [
+    "plugin-release.json",
+    "src",
+    "tests",
+    "styles.css",
+    "manifest.json",
+    "esbuild.config.mjs",
+    "package.json",
+    "package-lock.json",
+    "tsconfig.json"
+  ],
+  "build": [
+    "sh",
+    "-ec",
+    "npm ci --prefer-offline --no-audit --no-fund && npm run build"
+  ],
+  "test": [
+    "sh",
+    "-ec",
+    "npm run test:unit && node --experimental-transform-types --test tests/readiness.test.mjs"
+  ],
+  "runtimeFiles": [
+    "main.js",
+    "manifest.json",
+    "styles.css"
+  ],
+  "runtimeSources": {
+    "main.js": "dist/main.js",
+    "manifest.json": "manifest.json",
+    "styles.css": "styles.css"
+  },
+  "commonJsReleaseIdentity": true,
+  "protectedPaths": [
+    "community-plugins.json",
+    "plugins/structured-math/data.json"
+  ],
+  "receiverCompatibility": {
+    "runtimeOnlyFrom": [
+      "0.0.0"
+    ],
+    "runtimeOnlyFromReceipts": [],
+    "requiredMigrations": []
+  }
+}

@@ -1,9 +1,17 @@
 import { Plugin } from "obsidian";
 import { createStructuredMathExtension, displayMathSource } from "./editor/extension";
+import { countActiveStructuredMathWidgets } from "./editor/math-widget";
+import { structuredMathReadiness, type ReleaseReadiness } from "./release-readiness";
 import { DEFAULT_SETTINGS, type StructuredMathSettings } from "./settings";
 
 export default class StructuredMathPlugin extends Plugin {
   settings: StructuredMathSettings = DEFAULT_SETTINGS;
+
+  async getReleaseReadiness(): Promise<ReleaseReadiness> {
+    return structuredMathReadiness({
+      activeEquations: countActiveStructuredMathWidgets(),
+    });
+  }
 
   async onload(): Promise<void> {
     await this.loadSettings();
