@@ -1,6 +1,6 @@
 import { Plugin } from "obsidian";
 import { createStructuredMathExtension, displayMathSource } from "./editor/extension";
-import { countActiveStructuredMathWidgets } from "./editor/math-widget";
+import { structuredMathDrafts } from "./editor/math-widget";
 import { structuredMathReadiness, type ReleaseReadiness } from "./release-readiness";
 import { DEFAULT_SETTINGS, type StructuredMathSettings } from "./settings";
 
@@ -8,9 +8,15 @@ export default class StructuredMathPlugin extends Plugin {
   settings: StructuredMathSettings = DEFAULT_SETTINGS;
 
   async getReleaseReadiness(): Promise<ReleaseReadiness> {
-    return structuredMathReadiness({
-      activeEquations: countActiveStructuredMathWidgets(),
-    });
+    const drafts = await Promise.all(structuredMathDrafts().map(async (draft) => {
+      // A typed equation is safe to reload once the field's value is in the note and the note is saved.
+      let saved = false;
+      if (draft.typed && draft.written && draft.path !== null) {
+        saved = await this.app.vault.adapter.read(draft.path).then((disk) => disk === draft.buffer, () => false);
+      }
+      return { typed: draft.typed, composing: draft.composing, written: draft.written, saved };
+    }));
+    return structuredMathReadiness({ drafts });
   }
 
   async onload(): Promise<void> {

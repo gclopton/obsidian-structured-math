@@ -1,4 +1,5 @@
 import { EditorSelection } from "@codemirror/state";
+import { editorInfoField } from "obsidian";
 import { WidgetType, type EditorView } from "@codemirror/view";
 import { MathLiveEngine } from "../engine/mathlive/mathlive-engine";
 import { activateMath, deactivateMath, markMathDirty, type ActiveMathState } from "./active-state";
@@ -12,6 +13,21 @@ interface MathfieldDom extends HTMLElement {
 interface WidgetDomState {
   engine: MathLiveEngine;
   cleanup: Array<() => void>;
+  view: EditorView;
+  /** Set when the user first changes the field's value (before MathLive's input event is handled). */
+  typed: boolean;
+  /** True between compositionstart and compositionend: the composed text exists only in the field. */
+  composing: boolean;
+}
+
+/** One active widget as release readiness sees it. The note buffer and its path are compared with disk by the caller. */
+export interface StructuredMathDraft {
+  typed: boolean;
+  composing: boolean;
+  /** The field's value is already in the note buffer. */
+  written: boolean;
+  path: string | null;
+  buffer: string;
 }
 
 const widgetState = new WeakMap<HTMLElement, WidgetDomState>();
@@ -26,6 +42,27 @@ export function countActiveStructuredMathWidgets(
       ? domSource.querySelectorAll(".structured-math-active-widget").length
       : 0;
   return Math.max(activeWidgetElements.size, domCount);
+}
+
+export function structuredMathDrafts(): StructuredMathDraft[] {
+  const drafts: StructuredMathDraft[] = [];
+  for (const wrapper of activeWidgetElements) {
+    const state = widgetState.get(wrapper);
+    if (!state) continue;
+    const contentFrom = numberFromDataset(wrapper, "contentFrom");
+    const contentTo = numberFromDataset(wrapper, "contentTo");
+    const doc = state.view.state.doc;
+    const written = !Number.isNaN(contentFrom) && !Number.isNaN(contentTo) && contentTo <= doc.length
+      && doc.sliceString(contentFrom, contentTo) === state.engine.getLatex();
+    drafts.push({
+      typed: state.typed,
+      composing: state.composing,
+      written,
+      path: state.view.state.field(editorInfoField, false)?.file?.path ?? null,
+      buffer: doc.toString(),
+    });
+  }
+  return drafts;
 }
 
 function codeMirrorInputState(view: EditorView): { composing: number } | undefined {
@@ -136,6 +173,25 @@ export class StructuredMathWidget extends WidgetType {
     });
 
     const cleanup: Array<() => void> = [];
+    const domState: WidgetDomState = { engine, cleanup, view, typed: false, composing: false };
+    // Release readiness: capture-phase listeners on the wrapper run before MathLive's own handlers,
+    // so the first keystroke counts as typed before its value reaches the note buffer.
+    const markTyped = () => {
+      domState.typed = true;
+    };
+    wrapper.addEventListener("beforeinput", markTyped, true);
+    wrapper.addEventListener("input", markTyped, true);
+    wrapper.addEventListener("keydown", (event) => {
+      const key = (event as KeyboardEvent).key;
+      if (key.length === 1 || key === "Backspace" || key === "Delete") markTyped();
+    }, true);
+    wrapper.addEventListener("compositionstart", () => {
+      domState.composing = true;
+      markTyped();
+    }, true);
+    wrapper.addEventListener("compositionend", () => {
+      domState.composing = false;
+    }, true);
     const revertAndDeactivate = () => {
       const current = activeFromDataset(wrapper, engine.getLatex());
       if (!current) return;
@@ -245,7 +301,7 @@ export class StructuredMathWidget extends WidgetType {
     }, 0);
 
     activeWidgetElements.add(wrapper);
-    widgetState.set(wrapper, { engine, cleanup });
+    widgetState.set(wrapper, domState);
     return wrapper;
   }
 
